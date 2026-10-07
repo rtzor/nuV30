@@ -51,6 +51,9 @@ PCS86 failure. PCS86 DOS/FDC/XTA reads currently pass using external arbitration
   the sole guard.** Native exclusion remains a separate implementation task.
 - Mux or isolate all shared data, address and control outputs before allowing
   another master to drive. Gating enables alone does not disconnect bus drivers.
+  CORE_CE and CORE_CE_HALF are register enables; never use them to gate CLK.
+  CORE_BUS_ENABLE is combinational, not a glitch-free physical output enable:
+  use appropriate synchronous bus isolation/ownership logic.
 - No save-state writes, backdoor injection or independent mutation of the core
   during arbitration. Adapter ownership is external state and must also be
   restored consistently if save states are supported later.
@@ -60,7 +63,9 @@ PCS86 failure. PCS86 DOS/FDC/XTA reads currently pass using external arbitration
   or permanent exclusion may prevent grant. Channel 0 wins simultaneous eligible
   requests but cannot preempt an existing owner. RESET cancels grants and passes
   the core enables so the core receives reset; the system must reset other masters
-  consistently before allowing the CPU to drive again.
+  consistently before allowing the CPU to drive again. Other masters must stop
+  driving immediately on RESET, independently of GRANT, which clears at the next
+  clock edge while CORE_BUS_ENABLE already passes the CPU through.
 
 ## Checks registered before implementation acceptance
 

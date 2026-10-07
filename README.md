@@ -19,6 +19,23 @@ This is an experiment with AI driven hardware reverse engineering. Various agent
 | `docs/notes/` | campaign ledgers, pre-registrations, results, verdicts |
 | `docs/V20BITS.TXT`, `V20UC.TXT`, `V20UCDIS.PAS`, `pla_*.txt` | third-party microcode/PLA dumps — see attribution below |
 
+## Optional bus ownership utility
+
+`hdl/rtl/v30_bus_ownership.sv` is an opt-in, conservative FPGA integration
+adapter for a synchronous level request/grant handshake. It pauses the whole
+core at `SS_BUS_QUIET` and requires external bus isolation, event retention and
+a genuine atomic-operation exclusion guard. The current core's `BUSLOCK_N`
+output is fixed inactive and **cannot provide that guard**. This utility is not
+connected to the production harness and does not implement NEC's physical
+HLDRQ/HLDAK or maximum-mode RQ/AK pulse protocols.
+
+See the [core inventory](docs/notes/core_inventory_2026-10-07.md) and
+[adapter contract and checks](docs/notes/bus_ownership_prereg_2026-10-07.md)
+for the evidence, reset obligations and limitations. The
+[simulation results](docs/notes/bus_ownership_results_2026-10-07.md) distinguish
+the tested controller/core configurations from untested native pin timing,
+synthesis and hardware.
+
 ---
 
 ## Sources and attribution
