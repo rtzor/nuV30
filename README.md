@@ -46,6 +46,13 @@ or save-state fields. The port is absent in default builds. See the
 This opt-in interface remains outside the production harness; NEC pin timing,
 synthesis promotion and hardware validation are separate gates.
 
+`hdl/rtl/v30_rqak_frontend.sv` optionally converts synchronous active-low
+pulses into that level handshake, publishing external ownership at ACK end
+and keeping the CPU frozen through its conservative return gap. See the
+[pulse contract](docs/notes/rqak_pulse_prereg_2026-10-07.md) and
+[standalone results](docs/notes/rqak_pulse_results_2026-10-07.md) for its usage
+and limits; it remains outside the production harness.
+
 ---
 
 ## Sources and attribution

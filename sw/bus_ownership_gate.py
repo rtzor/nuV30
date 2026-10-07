@@ -19,14 +19,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--msys-root', default='C:/msys64')
     parser.add_argument('--work', default='../work/bus-ownership')
-    parser.add_argument('--core', action='store_true', help='run real ucore integration harness')
-    parser.add_argument('--native-guard', action='store_true', help='run opt-in native-state exclusion guard harness')
+    gate_choice = parser.add_mutually_exclusive_group()
+    gate_choice.add_argument('--core', action='store_true', help='run real ucore integration harness')
+    gate_choice.add_argument('--native-guard', action='store_true', help='run opt-in native-state exclusion guard harness')
+    gate_choice.add_argument('--rqak', action='store_true', help='run standalone RQAK pulse frontend contract harness')
     parser.add_argument('--compiler', choices=['gcc', 'clang'], default='gcc')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    top = ('tb_bus_exclusion' if args.native_guard else
+    top = ('tb_rqak_frontend' if args.rqak else 'tb_bus_exclusion' if args.native_guard else
            'tb_bus_ownership_core' if args.core else 'tb_bus_ownership')
     sources = ['hdl/rtl/v30_bus_ownership.sv', f'hdl/tb/{top}.sv']
+    if args.rqak:
+        sources += ['hdl/rtl/v30_rqak_frontend.sv']
     extra = []
     declared = list(sources) + ['sw/bus_ownership_gate.py']
     if args.core or args.native_guard:
