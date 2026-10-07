@@ -54,6 +54,10 @@ and keeping the CPU frozen through its conservative return gap. See the
 [demultiplexed full-chain results](docs/notes/rqak_core_integration_results_2026-10-07.md) for its usage
 and limits; it remains outside the production harness.
 
+### Experimental internal BIU yield
+
+`V30_BIU_YIELD` (requiring `V30_BUS_OWNERSHIP`, demux only) optionally inhibits new bus launches while the EU and existing BIU debts continue on normal CE. This engineering level interface is separate from native NEC pin timing and the existing whole-core freeze utility; see the [preregistered contract](docs/notes/biu_yield_level_prereg_2026-10-07.md) and [results and integration wiring](docs/notes/biu_yield_level_results_2026-10-07.md).
+
 ---
 
 ## Sources and attribution
@@ -133,4 +137,3 @@ Additional die-level and functional context:
   the 1997 16-bit V-Series User's Manual, and Intel's 8086 Family User's Manual
   (Oct 79) for the max-mode bus protocol and queue-status semantics.
 - **MiSTer** — the DE10-Nano framework (`hdl/sys/`) this harness is built in.
-

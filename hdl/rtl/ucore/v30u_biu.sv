@@ -150,6 +150,10 @@ module v30u_biu (
     input             ce_half,     // MUXED-BUS ONLY: `t1_half2`'s only enable
 `endif
     input             srst,
+`ifdef V30_BIU_YIELD
+    input             yield_pending, bus_owned, yield_exclude,
+    output            yield_ready,
+`endif
 
     // --- chip pins (composed in the top) ---
     output      [2:0] bs,
@@ -264,6 +268,24 @@ module v30u_biu (
 );
 
 import v30_ss_pkg::*;
+`ifdef V30_BIU_YIELD
+`ifndef V30_BUS_OWNERSHIP
+V30_BIU_YIELD_REQUIRES_V30_BUS_OWNERSHIP invalid_yield_guard_configuration();
+`endif
+`ifdef V30_MUXED_AD
+V30_BIU_YIELD_REJECTS_V30_MUXED_AD invalid_yield_mux_configuration();
+`endif
+// Invalid caller behavior is diagnosed; it never permits a competing launch.
+// These checks add no synthesis state.
+`ifndef SYNTHESIS
+always @(posedge clk) if (!srst) begin
+    assert (!(ce && bus_owned && md8080))
+        else $fatal(1,"V30_BIU_YIELD: owned mode transition is unsupported");
+    assert (!(ss_we && (yield_pending || bus_owned)))
+        else $fatal(1,"V30_BIU_YIELD: SS mutation during arbitration");
+end
+`endif
+`endif
 
 // rows.h encodings -- the comparator stack's own
 localparam bit [2:0] BS_INTA = 3'd0, BS_IOR = 3'd1, BS_IOW = 3'd2,
@@ -691,7 +713,18 @@ wire flush_src_live = flush_int_live || flush_nmi;
 wire flush_staged_eval = flush_stage && flush_pend && flush_src_live &&
                          flush_idle;
 wire flush_direct = !flush_stage && !flush_nmi_young && !flush_int_live;
-wire flush_fast = flush_rep && flush_idle && flush_direct;
+// No new state: only the launch decision is inhibited. Completion, queue,
+// posted-request and OPR ownership machinery keeps advancing on normal CE.
+`ifdef V30_BIU_YIELD
+wire yield_split_started = !r_cur_rd_last &&
+                            (r_run || r_cmt_valid || (r_rq_n != 2'd0));
+wire yield_inhibit = bus_owned || (yield_pending && !md8080 &&
+                                  !yield_exclude && !yield_split_started);
+assign yield_ready = !md8080 && !r_run && !r_cmt_valid && !yield_split_started;
+`else
+wire yield_inhibit = 1'b0;
+`endif
+wire flush_fast = flush_rep && flush_idle && flush_direct && !yield_inhibit;
 // A hardware acknowledge posted on a CODE T4 replaces a speculative CODE
 // announcement already waiting behind that fetch.  The status decoder sees
 // the replacement on the collision clock; the ordinary committed-request
@@ -707,8 +740,11 @@ wire inta_tail_replace = eu_post && (eu_bs == BS_INTA) &&
 // `eu_halt_irq` carries the HALT provenance one clock before the INTA row.
 wire inta_follow_preview = eu_post && (eu_bs == BS_INTA) &&
                            r_rd_was_split;
-wire inta_preview = inta_tail_replace || inta_follow_preview;
-wire vector_follow_preview = eu_vector_post && r_rd_was_split;
+// The raw intentions consume the existing INTA/split debt even if a post
+// is retained while owned. Only the physical preview/early launch is gated.
+wire inta_preview = (inta_tail_replace || inta_follow_preview) && !yield_inhibit;
+wire vector_follow_intent = eu_vector_post && r_rd_was_split;
+wire vector_follow_preview = vector_follow_intent && !yield_inhibit;
 // A WITHDRAWN ANNOUNCEMENT IS RELEASED ON ITS OWN CLOCK, AND `bs` HAS ONLY
 // ONE SAMPLE PER CLOCK TO SAY SO WITH.
 //
@@ -2293,13 +2329,13 @@ always_comb begin
             ev_here = 1'b1;                       // end of an idle clock
         end
         if (inta_follow_preview) rd_was_split = 1'b0;
-        if (vector_follow_preview) rd_was_split = 1'b0;
+        if (vector_follow_intent) rd_was_split = 1'b0;
         if (inta_tail_replace) ev_here = 1'b1;
         //====================================================================
         // (d) THE EVAL: pick the next bus cycle
         //====================================================================
         did_grant = 1'b0;
-        if (ev_here && !cmt_valid) begin
+        if (ev_here && !cmt_valid && !yield_inhibit) begin
             flush_eval = 1'b0;    // F3's point is spent by any commit
             gr_ok = 1'b0;
             occ = {1'b0, q_cnt}
@@ -2539,7 +2575,7 @@ always_comb begin
         // i.e. suppress iff `D <= H`) needs the `D == H` case too.  That is
         // `eu_unhalt_disp`, the same wake one stage further down the same pin
         // pipeline.  A term added to the existing test; nothing new is stored.
-        if (halt_pending && !run && !cmt_valid && !set_noeval &&
+        if (halt_pending && !run && !cmt_valid && !set_noeval && !yield_inhibit &&
             !eu_unhalt_disp) begin
             cmt_bs = BS_HALT; cmt_ghost = 1'b0;
             // S9b: the HALT display drives the address latch AS IT STANDS when
