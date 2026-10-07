@@ -50,7 +50,8 @@ synthesis promotion and hardware validation are separate gates.
 pulses into that level handshake, publishing external ownership at ACK end
 and keeping the CPU frozen through its conservative return gap. See the
 [pulse contract](docs/notes/rqak_pulse_prereg_2026-10-07.md) and
-[standalone results](docs/notes/rqak_pulse_results_2026-10-07.md) for its usage
+[standalone results](docs/notes/rqak_pulse_results_2026-10-07.md) and
+[demultiplexed full-chain results](docs/notes/rqak_core_integration_results_2026-10-07.md) for its usage
 and limits; it remains outside the production harness.
 
 ---
