@@ -20,14 +20,16 @@ def main():
     parser.add_argument('--msys-root', default='C:/msys64')
     parser.add_argument('--work', default='../work/bus-ownership')
     parser.add_argument('--core', action='store_true', help='run real ucore integration harness')
+    parser.add_argument('--native-guard', action='store_true', help='run opt-in native-state exclusion guard harness')
     parser.add_argument('--compiler', choices=['gcc', 'clang'], default='gcc')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    top = 'tb_bus_ownership_core' if args.core else 'tb_bus_ownership'
+    top = ('tb_bus_exclusion' if args.native_guard else
+           'tb_bus_ownership_core' if args.core else 'tb_bus_ownership')
     sources = ['hdl/rtl/v30_bus_ownership.sv', f'hdl/tb/{top}.sv']
     extra = []
     declared = list(sources) + ['sw/bus_ownership_gate.py']
-    if args.core:
+    if args.core or args.native_guard:
         ucore = root / 'hdl/rtl/ucore'
         sources += ['hdl/rtl/ucore/' + name for name in
                     ['v30u_ss_pkg.sv', 'v30_core.sv', 'v30u_biu.sv', 'v30u_ucrom.sv', 'v30u_eu.sv']]
@@ -37,6 +39,8 @@ def main():
                  ['UNUSEDSIGNAL', 'VARHIDDEN', 'TIMESCALEMOD', 'WIDTHEXPAND',
                   'BLKSEQ', 'DECLFILENAME', 'UNUSEDPARAM', 'MULTIDRIVEN',
                   'UNOPTFLAT', 'CASEINCOMPLETE', 'PROCASSINIT', 'PINCONNECTEMPTY']] + ['-DV30_BACKDOOR']
+        if args.native_guard:
+            extra += ['-DV30_BUS_OWNERSHIP']
     work = (root / args.work).resolve()
     work.mkdir(parents=True, exist_ok=True)
     build = Path(tempfile.mkdtemp(prefix='bus_ownership_', dir=work))
@@ -82,6 +86,28 @@ def main():
             raise SystemExit(simulation.returncode)
     if inputs != {name: digest(root / name) for name in declared}:
         raise SystemExit('Source changed during build; no receipt issued')
+    if args.native_guard:
+        # Same harness must reject the opt-in pin when the macro is absent.
+        probe = ['verilator', '--lint-only', '--timing', '--assert', '-Wall',
+                 '--top-module', top,
+                 *[option for option in extra if option != '-DV30_BUS_OWNERSHIP'],
+                 *sources]
+        if os.name == 'nt':
+            probe_script = ('export PATH=' + compiler_path + '/ucrt64/bin:/usr/bin:$PATH; cd '
+                            + shlex.quote(msys_path) + ' && ' + shlex.join(probe))
+            probe_invocation = [str(Path(args.msys_root) / 'usr/bin/bash.exe'), '-lc', probe_script]
+        else:
+            probe_invocation = probe
+        probe_result = subprocess.run(probe_invocation, cwd=root, text=True,
+                                      capture_output=True, timeout=120)
+        probe_log = probe_result.stdout + probe_result.stderr
+        (build / 'default-port-probe.log').write_text(probe_log, encoding='utf-8')
+        if (probe_result.returncode == 0 or 'PINNOTFOUND' not in probe_log or
+                'BUS_EXCLUDE' not in probe_log):
+            raise SystemExit('Default port absence control failed; see default-port-probe.log')
+        with (build / 'gate.log').open('a', encoding='utf-8') as log:
+            log.write('\nExpected default-port rejection:\n' + probe_log)
+        print('PASS BUS_EXCLUDE absent without V30_BUS_OWNERSHIP')
     receipt = {'inputs': inputs, 'binary_sha256': digest(executable),
                'command': command, 'log_sha256': digest(build / 'gate.log'),
                'gate': top + ' contract simulation only'}

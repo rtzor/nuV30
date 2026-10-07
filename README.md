@@ -36,6 +36,16 @@ for the evidence, reset obligations and limitations. The
 the tested controller/core configurations from untested native pin timing,
 synthesis and hardware.
 
+The ucore can optionally publish `BUS_EXCLUDE` when compiled with
+`V30_BUS_OWNERSHIP`. Connect that FPGA-only, conservative native-state guard
+to the adapter's `EXCLUDE` input. It covers decoded LOCK lifetime and active
+internal entry microcode without changing `BUSLOCK_N`, instruction scheduling
+or save-state fields. The port is absent in default builds. See the
+[guard preregistration](docs/notes/bus_exclusion_prereg_2026-10-07.md) and
+[guard simulation results](docs/notes/bus_exclusion_results_2026-10-07.md).
+This opt-in interface remains outside the production harness; NEC pin timing,
+synthesis promotion and hardware validation are separate gates.
+
 ---
 
 ## Sources and attribution
