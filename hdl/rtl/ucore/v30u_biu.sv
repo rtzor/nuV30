@@ -268,12 +268,25 @@ module v30u_biu (
 );
 
 import v30_ss_pkg::*;
+`ifdef V30_MUXED_YIELD
+`ifndef V30_BIU_YIELD
+V30_MUXED_YIELD_REQUIRES_V30_BIU_YIELD invalid_muxed_yield_scheduler();
+`endif
+`ifndef V30_BUS_OWNERSHIP
+V30_MUXED_YIELD_REQUIRES_V30_BUS_OWNERSHIP invalid_muxed_yield_guard();
+`endif
+`ifndef V30_MUXED_AD
+V30_MUXED_YIELD_REQUIRES_V30_MUXED_AD invalid_muxed_yield_pins();
+`endif
+`endif
 `ifdef V30_BIU_YIELD
 `ifndef V30_BUS_OWNERSHIP
 V30_BIU_YIELD_REQUIRES_V30_BUS_OWNERSHIP invalid_yield_guard_configuration();
 `endif
 `ifdef V30_MUXED_AD
+`ifndef V30_MUXED_YIELD
 V30_BIU_YIELD_REJECTS_V30_MUXED_AD invalid_yield_mux_configuration();
+`endif
 `endif
 // Invalid caller behavior is diagnosed; it never permits a competing launch.
 // These checks add no synthesis state.

@@ -29,11 +29,18 @@ module v30_bus_ownership (
     output logic       CORE_CE_HALF,
     output logic       CORE_BUS_ENABLE
 );
-    logic acquire;
+    logic acquire, pending_acquire;
     // Gate the acquisition edge itself: the EU must not post a new request
     // on the same clock that transfers bus ownership.
-    assign acquire = CE && !(|GRANT) && CORE_QUIET && !EXCLUDE && (|REQUEST);
+    assign pending_acquire = !(|GRANT) && CORE_QUIET && !EXCLUDE && (|REQUEST);
+    assign acquire = CE && pending_acquire;
+`ifdef V30_MUXED_YIELD
+    // Actual acquisition still waits for CE; reserve synchronous bus permission
+    // across the intervening fabric/HALF clocks of eligible queued handover.
+    assign CORE_BUS_ENABLE = RESET || (!(|GRANT) && !pending_acquire);
+`else
     assign CORE_BUS_ENABLE = RESET || (!(|GRANT) && !acquire);
+`endif
     assign CORE_CE = CE && CORE_BUS_ENABLE;
     assign CORE_CE_HALF = CE_HALF && CORE_BUS_ENABLE;
 

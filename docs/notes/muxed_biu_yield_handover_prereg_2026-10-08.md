@@ -1,0 +1,25 @@
+# Multiplexed yield handover replacement preregistration — 2026-10-08
+
+This supplements committed preregistration `dff189f198aeb171a120fbeb4eb90644941e25b3` on `feature/muxed-biu-yield`, based on PR #3 commit `db16f7d46e68ae788107140bff5e666412a76a71`. Commit this replacement before changing the controller or scoring its replacement. The original 72-profile matrix, six separate pad fixtures, watchdogs, negative controls, full trace comparisons, regressions and clean CONTROL G6 bars remain unchanged.
+
+## Refuted candidate and source-derived hypothesis
+
+The original core pad mask alone did not meet the registered continuous isolation bar. Retain the complete failed `work/muxed-biu-yield/bus_ownership_2w0yelpx/gate.log` and its source snapshot. Twelve protected profiles passed; the first dual-owner profile failed at the all-fabric continuous-isolation assertion. A distinct diagnostic run records the exact request/grant/CE state before replacement acceptance.
+
+Source inspection identifies a controller mechanism: `acquire` is qualified by CE, and CORE_BUS_ENABLE uses `acquire` as well as registered GRANT. After the first owner releases GRANT with the second REQUEST retained, `acquire` masks permission while CE is high; at the following CE0 fabric/HALF interval, GRANT remains zero and `acquire` falls until the next CE. The previous demultiplexed live-chain instrument kept controller CE high and could not test this inter-CE permission window. This is an integration contract finding, not native NEC arbitration evidence.
+
+## Minimal replacement and falsifiers
+
+In `v30_bus_ownership.sv`, factor the existing acquisition eligibility into one combinational term: no GRANT, CORE_QUIET, no EXCLUDE, and a REQUEST. Keep registered acquisition qualified by actual CE. Only under `V30_MUXED_YIELD`, use the unqualified eligibility term to inhibit CORE_BUS_ENABLE; without that macro, preserve the original CE-qualified permission equation. No new state, saved-state address, architectural mechanism, opcode rule, timing exception or asynchronous-input contract. Core AD masks and BIU operands remain the original candidate.
+
+Prediction: while the synchronous caller holds an eligible request, CPU bus permission remains false across all CE0/HALF clocks preceding initial acquisition and queued handover; GRANT still changes only on actual CE or RESET. A current owner is not preempted. With no grant and no eligible pending request, CPU permission returns. RESET enables CPU permission immediately and clears registered grants on the first clock; peers independently cease driving on RESET. An eligibility term must not depend on CORE_BUS_ENABLE itself; unsuppressed full-chain UNOPTFLAT remains mandatory.
+
+Validate the replacement on a disjoint public-controller population that did not select the candidate, in new `hdl/tb/tb_mux_yield_handover.sv`: **10 profiles**, both owner orders at actual CE divisors **2, 3, 4, 5 and 8**, with HALF at floor(div/2). Each profile independently checks quiet and EXCLUDE eligibility, initial CE0 pending isolation, no CE0 GRANT transitions, no preemption, at least four eligible CE intervals for each owner, every pre/post fabric interval of queued release and acquisition isolated, final request-free release enabling CPU permission, and RESET cancellation of an eligible pending acquisition. Require exactly ten completed profiles. Inputs are synchronous public level stimuli; these fixtures are not the pulse frontend, a real CPU, physical tri-state evidence or native timing proof. No forced internal state.
+
+Compile and run this separate fixture from the new runner mode. Declare its source, executable, complete log and build/run command in the receipt. The parent strictly verifies and replays it. Continue to score the original 72 actual multiplexed chains and all unchanged bars; do not gate continuous isolation on CE merely to obtain a pass. Distinct CE3/4 chain populations remain unobserved by the failed CE2 first-dual profile, but the separate ten-fixture population is required even if all chains pass.
+
+## Closure and custody
+
+Retain both failures and intermediate instrument corrections. Results distinguish the original rejected core-mask-only candidate from the replacement controller permission law. Numeric bars are not relaxed. Fresh SS/R7 checks must include the changed controller bytes; G0 remains table/model consistency only. One clean default CONTROL G6 starts only after passing actual-chain evidence and parent approval of the final production closure, and its manifest includes this supplemental preregistration. Separate macro-ON A&S/VQM must inspect variable ownership, readiness, exclusion and physical pad masking with the new controller term. No fitted macro-ON timing or silicon claim.
+
+SIMPLICITY: this is 80's era hardware — nothing on the die is wasted. Complex or confusing observed behavior is likely simple systems interacting in ways not yet understood. A large fitted table, a many-cased rule, or a per-opcode special case is a signal of misunderstanding, not a deliverable.
