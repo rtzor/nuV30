@@ -311,12 +311,25 @@ wire [19:0] ad_o;
 wire        ad_oe_addr, ad_oe_ps, ad_oe_data;
 `endif
 
+`ifdef V30_MUXED_YIELD
+`ifndef V30_BIU_YIELD
+V30_MUXED_YIELD_REQUIRES_V30_BIU_YIELD invalid_muxed_yield_scheduler();
+`endif
+`ifndef V30_BUS_OWNERSHIP
+V30_MUXED_YIELD_REQUIRES_V30_BUS_OWNERSHIP invalid_muxed_yield_guard();
+`endif
+`ifndef V30_MUXED_AD
+V30_MUXED_YIELD_REQUIRES_V30_MUXED_AD invalid_muxed_yield_pins();
+`endif
+`endif
 `ifdef V30_BIU_YIELD
 `ifndef V30_BUS_OWNERSHIP
 V30_BIU_YIELD_REQUIRES_V30_BUS_OWNERSHIP invalid_yield_guard_configuration();
 `endif
 `ifdef V30_MUXED_AD
+`ifndef V30_MUXED_YIELD
 V30_BIU_YIELD_REJECTS_V30_MUXED_AD invalid_yield_mux_configuration();
+`endif
 `endif
 `endif
 
@@ -511,8 +524,17 @@ v30u_eu u_eu (
 // AD drive (simple en?val:'z forms only - Verilator requirement).
 // AD[19:16] carry the address during address phases and PS3-0 during the
 // data phase; AD[15:0] additionally carry write data.
-assign AD[15:0]  = (ad_oe_addr | ad_oe_data) ? ad_o[15:0]  : 16'hzzzz;
-assign AD[19:16] = (ad_oe_addr | ad_oe_ps)   ? ad_o[19:16] : 4'hz;
+// Synchronous integration pad permission only; raw BIU enables/latches
+// continue unchanged. This is not a glitch-free physical OE guarantee.
+`ifdef V30_MUXED_YIELD
+wire pad_permission = !BUS_OWNED;
+`else
+wire pad_permission = 1'b1;
+`endif
+wire pad_drive_lo = pad_permission && (ad_oe_addr | ad_oe_data);
+wire pad_drive_hi = pad_permission && (ad_oe_addr | ad_oe_ps);
+assign AD[15:0]  = pad_drive_lo ? ad_o[15:0]  : 16'hzzzz;
+assign AD[19:16] = pad_drive_hi ? ad_o[19:16] : 4'hz;
 
 // AD_OE -- THE PADS' OWN OUTPUT ENABLE, PUBLISHED (task #37, user-approved
 // 2026-08-04).  This is a WIRE, not a rule: it is bit-for-bit the SAME
@@ -530,7 +552,7 @@ assign AD[19:16] = (ad_oe_addr | ad_oe_ps)   ? ad_o[19:16] : 4'hz;
 // structure, not the instrument's.  §59.7.1's blocker -- Quartus 17.1 folds
 // `net === 1'bz` on an internal tri-state and deletes the retention register
 // -- is removed by construction, because the model no longer asks the net.
-assign AD_OE = {{4{ad_oe_addr | ad_oe_ps}}, {16{ad_oe_addr | ad_oe_data}}};
+assign AD_OE = {{4{pad_drive_hi}}, {16{pad_drive_lo}}};
 `endif  // V30_MUXED_AD
 
 // BUSLOCK is not implemented (inherited scope note; the FSM core drives it

@@ -27,17 +27,18 @@ def main():
     gate_choice.add_argument('--rqak-core', action='store_true', help='run actual ucore and RQAK pulse frontend chain')
     gate_choice.add_argument('--biu-yield', action='store_true', help='experimental demux BIU-level yield contract')
     gate_choice.add_argument('--rqak-biu-yield', action='store_true', help='actual pulse frontend plus live-EU BIU yield chain')
+    gate_choice.add_argument('--rqak-mux-yield', action='store_true', help='experimental multiplexed live-EU pulse/yield chain')
     parser.add_argument('--compiler', choices=['gcc', 'clang'], default='gcc')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    top = ('tb_rqak_biu_yield' if args.rqak_biu_yield else 'tb_biu_yield' if args.biu_yield else 'tb_rqak_core' if args.rqak_core else 'tb_rqak_frontend' if args.rqak else 'tb_bus_exclusion' if args.native_guard else
+    top = ('tb_rqak_mux_yield' if args.rqak_mux_yield else 'tb_rqak_biu_yield' if args.rqak_biu_yield else 'tb_biu_yield' if args.biu_yield else 'tb_rqak_core' if args.rqak_core else 'tb_rqak_frontend' if args.rqak else 'tb_bus_exclusion' if args.native_guard else
            'tb_bus_ownership_core' if args.core else 'tb_bus_ownership')
     sources = ['hdl/rtl/v30_bus_ownership.sv', f'hdl/tb/{top}.sv']
-    if args.rqak or args.rqak_core or args.rqak_biu_yield:
+    if args.rqak or args.rqak_core or args.rqak_biu_yield or args.rqak_mux_yield:
         sources += ['hdl/rtl/v30_rqak_frontend.sv']
     extra = []
     declared = list(sources) + ['sw/bus_ownership_gate.py']
-    if args.core or args.native_guard or args.rqak_core or args.biu_yield or args.rqak_biu_yield:
+    if args.core or args.native_guard or args.rqak_core or args.biu_yield or args.rqak_biu_yield or args.rqak_mux_yield:
         ucore = root / 'hdl/rtl/ucore'
         sources += ['hdl/rtl/ucore/' + name for name in
                     ['v30u_ss_pkg.sv', 'v30_core.sv', 'v30u_biu.sv', 'v30u_ucrom.sv', 'v30u_eu.sv']]
@@ -47,10 +48,14 @@ def main():
                  ['UNUSEDSIGNAL', 'VARHIDDEN', 'TIMESCALEMOD', 'WIDTHEXPAND',
                   'BLKSEQ', 'DECLFILENAME', 'UNUSEDPARAM', 'MULTIDRIVEN',
                   'UNOPTFLAT', 'CASEINCOMPLETE', 'PROCASSINIT', 'PINCONNECTEMPTY']] + ['-DV30_BACKDOOR']
-        if args.native_guard or args.rqak_core or args.biu_yield or args.rqak_biu_yield:
+        if args.native_guard or args.rqak_core or args.biu_yield or args.rqak_biu_yield or args.rqak_mux_yield:
             extra += ['-DV30_BUS_OWNERSHIP']
-        if args.biu_yield or args.rqak_biu_yield:
+        if args.biu_yield or args.rqak_biu_yield or args.rqak_mux_yield:
             extra += ['-DV30_BIU_YIELD']
+        if args.rqak_mux_yield:
+            extra += ['-DV30_MUXED_AD', '-DV30_MUXED_YIELD']
+    if args.rqak_mux_yield:
+        declared += ['hdl/tb/tb_mux_yield_handover.sv']
     work = (root / args.work).resolve()
     work.mkdir(parents=True, exist_ok=True)
     build = Path(tempfile.mkdtemp(prefix='bus_ownership_', dir=work))
@@ -63,6 +68,8 @@ def main():
     if args.compiler == 'clang':
         makeflags = ("CXX=clang++ LINK='env -u LINK clang++' CFG_LDLIBS_THREADS=-pthread"
                      if os.name == 'nt' else 'CXX=clang++ LINK=clang++')
+        if args.rqak_mux_yield:
+            makeflags += ' OPT_FAST=-O0 OPT_SLOW=-O0'
         command += ['-CFLAGS', '-std=c++20', '-MAKEFLAGS', makeflags]
     if os.name == 'nt':
         # MSYS translates /c/... for native tools and supplies compiler/runtime.
@@ -233,11 +240,87 @@ def main():
         if control.returncode or '%Warning-UNOPTFLAT' in output:
             raise SystemExit('Full-chain UNOPTFLAT lint failed; see ' + label + '.log')
         print('PASS full-chain unsuppressed UNOPTFLAT warnings=0')
+    additional_artifacts = {}
+    additional_commands = {}
+    if args.rqak_mux_yield:
+        def invoke(label, argv, expected_marker=None, reject_unoptflat=False):
+            if os.name == 'nt':
+                script = ('export PATH=' + compiler_path + '/ucrt64/bin:/usr/bin:$PATH; cd '
+                          + shlex.quote(msys_path) + ' && ' + shlex.join(argv))
+                invocation = [str(Path(args.msys_root) / 'usr/bin/bash.exe'), '-lc', script]
+            else:
+                invocation = argv
+            result = subprocess.run(invocation, cwd=root, text=True, capture_output=True, timeout=1800)
+            output = result.stdout + result.stderr
+            path = build / (label + '.log')
+            path.write_text(output, encoding='utf-8')
+            additional_artifacts[path.relative_to(build).as_posix()] = digest(path)
+            additional_commands[label] = argv
+            with (build / 'gate.log').open('a', encoding='utf-8') as log:
+                log.write('\nMux yield control ' + label + ':\n' + output)
+            if expected_marker:
+                if result.returncode == 0 or expected_marker not in output:
+                    raise SystemExit('Expected mux rejection missing: ' + label)
+            elif result.returncode or (reject_unoptflat and '%Warning-UNOPTFLAT' in output):
+                raise SystemExit('Mux control failed: ' + label)
+            print('PASS mux control ' + label)
+        handover_dir = build / 'handover'
+        handover_command = ['verilator', '--binary', '--timing', '--assert', '-Wall',
+                            '--compiler', args.compiler, '--top-module', 'tb_mux_yield_handover',
+                            '--Mdir', handover_dir.as_posix(), '-DV30_MUXED_YIELD',
+                            '-DV30_MUXED_AD', '-DV30_BIU_YIELD', '-DV30_BUS_OWNERSHIP',
+                            'hdl/rtl/v30_bus_ownership.sv', 'hdl/tb/tb_mux_yield_handover.sv']
+        if args.compiler == 'clang':
+            handover_command += ['-CFLAGS', '-std=c++20', '-MAKEFLAGS', makeflags]
+        invoke('disjoint-handover-build', handover_command)
+        handover_executable = handover_dir / ('Vtb_mux_yield_handover' + ('.exe' if os.name == 'nt' else ''))
+        invoke('disjoint-handover-run', [str(handover_executable)])
+        additional_artifacts[handover_executable.relative_to(build).as_posix()] = digest(handover_executable)
+        for label, marker in [('bad_ce_overlap', 'CONTRACT VIOLATED (C-a)'),
+                              ('bad_no_half', 'REQUIREMENT VIOLATED (S-1)')]:
+            invoke(label, [str(executable), '+' + label], expected_marker=marker)
+        for label, omitted, marker in [
+            ('missing-mux-yield-scheduler', '-DV30_BIU_YIELD', 'V30_MUXED_YIELD_REQUIRES_V30_BIU_YIELD'),
+            ('missing-mux-yield-guard', '-DV30_BUS_OWNERSHIP', 'V30_MUXED_YIELD_REQUIRES_V30_BUS_OWNERSHIP'),
+            ('missing-mux-yield-pins', '-DV30_MUXED_AD', 'V30_MUXED_YIELD_REQUIRES_V30_MUXED_AD'),
+            ('missing-mux-yield-authorization', '-DV30_MUXED_YIELD', 'V30_BIU_YIELD_REJECTS_V30_MUXED_AD')]:
+            options = [x for x in extra if x != omitted]
+            invoke(label, ['verilator', '--lint-only', '--timing', '--assert', '-Wall',
+                          # Exercise the BIU's named guard directly: an invalid core can
+                          # report its missing conditional public port before elaborating guards.
+                          '--top-module', 'v30u_biu', *options,
+                          'hdl/rtl/ucore/v30u_ss_pkg.sv', 'hdl/rtl/ucore/v30u_biu.sv'], expected_marker=marker)
+        for lint_top, label in [('v30_core', 'mux-core-unoptflat'), (top, 'mux-chain-unoptflat')]:
+            options = [x for x in extra if x != '-Wno-UNOPTFLAT']
+            selected = sources if lint_top == top else [x for x in sources if x.startswith('hdl/rtl/ucore/')]
+            invoke(label, ['verilator', '--lint-only', '--timing', '--assert', '-Wall', '-Wno-fatal',
+                          '--report-unoptflat', '--Mdir', (build / label).as_posix(),
+                          '--top-module', lint_top, *options, *selected], reject_unoptflat=True)
+            for report in (build / label).rglob('*'):
+                if report.is_file():
+                    additional_artifacts[report.relative_to(build).as_posix()] = digest(report)
+        on_trace = build / 'inactive-on.trace'
+        invoke('inactive-on-trace', [str(executable), '+trace_only=1', '+trace=' + on_trace.as_posix()])
+        baseline_dir = build / 'baseline'
+        baseline_command = [x for x in command if x not in ('-DV30_BUS_OWNERSHIP', '-DV30_BIU_YIELD', '-DV30_MUXED_YIELD')]
+        baseline_command[baseline_command.index('--Mdir') + 1] = baseline_dir.as_posix()
+        invoke('baseline-build', baseline_command)
+        baseline_executable = baseline_dir / executable.name
+        baseline_trace = build / 'baseline-off.trace'
+        invoke('baseline-off-trace', [str(baseline_executable), '+trace_only=1', '+trace=' + baseline_trace.as_posix()])
+        if on_trace.read_bytes() != baseline_trace.read_bytes():
+            raise SystemExit('Mux inactive ON/baseline OFF full trace mismatch; traces retained')
+        for output in [on_trace, baseline_trace, baseline_executable]:
+            additional_artifacts[output.relative_to(build).as_posix()] = digest(output)
+        print('PASS exact baseline OFF/inactive ON full trace rows=' + str(len(on_trace.read_bytes().splitlines())))
     if inputs != {name: digest(root / name) for name in declared}:
         raise SystemExit('Source changed during controls; no receipt issued')
     receipt = {'inputs': inputs, 'binary_sha256': digest(executable),
                'command': command, 'log_sha256': digest(build / 'gate.log'),
                'gate': top + ' contract simulation only'}
+    if additional_artifacts:
+        receipt['additional_artifacts'] = additional_artifacts
+        receipt['additional_commands'] = additional_commands
     receipt_path = build / 'receipt.json'
     receipt_path.write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
     print(f'Receipt: {receipt_path}')

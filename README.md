@@ -60,6 +60,8 @@ and limits; it remains outside the production harness.
 
 The [RQ/AK plus live-EU integration results](docs/notes/rqak_biu_yield_integration_results_2026-10-08.md) cover the actual synchronous pulse frontend, level controller and BIU yield scheduler together. Run `python sw/bus_ownership_gate.py --compiler clang --rqak-biu-yield`; core CE stays live, CPU bus permission supplies external isolation, and a peer may drive only after matching `EXTERNAL_GRANT` and with RESET inactive. This remains demultiplexed simulation engineering evidence, without native pin timing or fitted ON timing claims.
 
+`V30_MUXED_YIELD` additionally opts into experimental shared AD pad masking; it requires `V30_MUXED_AD`, `V30_BIU_YIELD` and `V30_BUS_OWNERSHIP`. Core CE/HALF remain live and the frontend/controller sample the same actual core CE. The opt-in controller reserves eligible bus permission between CE clocks, while the core masks both actual AD drive and its published AD_OE during BUS_OWNED. External synchronous isolation of the other controls remains required. Run `python sw/bus_ownership_gate.py --compiler clang --rqak-mux-yield`; see the [preregistered contract](docs/notes/muxed_biu_yield_prereg_2026-10-08.md), [handover replacement](docs/notes/muxed_biu_yield_handover_prereg_2026-10-08.md) and [results](docs/notes/muxed_biu_yield_results_2026-10-08.md). This is simulation engineering evidence, without native or physical pad-timing guarantees.
+
 ---
 
 ## Sources and attribution
