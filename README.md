@@ -58,6 +58,8 @@ and limits; it remains outside the production harness.
 
 `V30_BIU_YIELD` (requiring `V30_BUS_OWNERSHIP`, demux only) optionally inhibits new bus launches while the EU and existing BIU debts continue on normal CE. This engineering level interface is separate from native NEC pin timing and the existing whole-core freeze utility; see the [preregistered contract](docs/notes/biu_yield_level_prereg_2026-10-07.md) and [results and integration wiring](docs/notes/biu_yield_level_results_2026-10-07.md).
 
+The [RQ/AK plus live-EU integration results](docs/notes/rqak_biu_yield_integration_results_2026-10-08.md) cover the actual synchronous pulse frontend, level controller and BIU yield scheduler together. Run `python sw/bus_ownership_gate.py --compiler clang --rqak-biu-yield`; core CE stays live, CPU bus permission supplies external isolation, and a peer may drive only after matching `EXTERNAL_GRANT` and with RESET inactive. This remains demultiplexed simulation engineering evidence, without native pin timing or fitted ON timing claims.
+
 ---
 
 ## Sources and attribution
