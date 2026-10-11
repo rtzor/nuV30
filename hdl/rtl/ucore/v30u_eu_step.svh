@@ -612,7 +612,7 @@ S_ROW: if (chain == 4'd0) begin
         if (row_q1 && (rowq_n == 2'd0)) rowb0_n = q_byte; else rowb1_n = q_byte;
         pc_n = pc_n + 16'd1;
         rowq_n = rowq_n + 2'd1;
-        if ({1'b0, rowq_n} < row_qn) stop = 1'b1;         // a second byte
+        if ({1'b0, rowq_n} < {1'b0, row_qn}) stop = 1'b1;         // a second byte
     end else if (row_pre_wait) begin
         stop = 1'b1;                                    // deliver_read
     end else if (row_slot_wait) begin

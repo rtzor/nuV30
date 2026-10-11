@@ -1,0 +1,381 @@
+{
+  "schema": "staged-lock-div5-experimental-results-v1",
+  "status": "EXPERIMENTAL_ORIGINAL_QUALIFICATION_BLOCKED",
+  "source_base": "ed50fb4e5222fb5567c01ff16d34cd8a08f584e2",
+  "description": "Opt-in experimental staged LOCK controller for a new fixed demultiplexed div5 integration profile. Macro-OFF retains the default LOCK algorithm. The nine-file delta also includes explicit width extensions and non-synthesis initialization repairs; universal legacy behavior equivalence has not been established. This is not native waveform validation or a production promotion.",
+  "profile": {
+    "sys_mhz": 50,
+    "sys_period_ns": 20,
+    "ce_divisor": 5,
+    "nominal_cpu_opportunity_mhz": 10,
+    "ss_during_operation": "unsupported; hard rejection",
+    "schedule": "Following accepted CE: +20 ns capture primitives; +40 ns compose boundary; +60 ns publication enabled; +80 ns existing SYS sampler; +100 ns next CE consumes old sampled value. Live permissions remain separate.",
+    "storage_bits": 39,
+    "portability": "Not the generic adjacent-CE/CE_HALF or mux contract."
+  },
+  "implementation": {
+    "primitive_bits": 22,
+    "boundary_bits": 4,
+    "intent": "Current-source experimental control law; no final st_n or effective-D fallback and no duplicated STEP dispatcher. Prefix and INTA holds remain separate. Reset cancels epochs; invalid profile transitions are rejected without abandoning owned LOW.",
+    "rtl_sha256": {
+      "hdl/rtl/ucore/v30u_eu.sv": "9bb0e5de661136b3558c04a3ee65c1b8dcf702a9efe7e5e4fdd81cbaf058aaa0",
+      "hdl/rtl/ucore/v30u_biu.sv": "491d3500372523c7f6755957fc0aa2c4de0a22225b9703ba72ceb8a71d03da9b",
+      "hdl/rtl/ucore/v30_core.sv": "92b081f857a376494c8cbd7275d1fac9bba0ae99db16d8a6b41fc820a5689c2c",
+      "hdl/rtl/system_large.sv": "f5c3fe0ef608890192cc477a485b8bc882979c7f76aeede2907be53c206b85a5",
+      "hdl/rtl/ucore/v30u_staged_lock_pkg.svh": "4313c2355327d9d95a55f617d195fb80e12ffea8e9a345ef41bde698f50bfa0a",
+      "hdl/rtl/ucore/v30u_staged_lock_unit.svh": "54e5f8b7adf1bf57fb3ccbc821e09562b515022bdf97ac4a3040023f1c9333d0",
+      "hdl/rtl/ucore/v30u_eu_wd1.svh": "e36054d5ccb308ac4144288ab162f17cad66457861587a4c0ec4f6777dae77e9",
+      "hdl/rtl/ucore/v30u_eu_step.svh": "ae1fe3b4e3f9706e5f7743e82b2fb839be4691dcc0f086e3604236ef2b747e98",
+      "hdl/rtl/ucore/v30u_ss_pkg.sv": "cec84b0d4d752ad747b15f5fc5ad25ec5a044a38c21a82286cab1b047e914209"
+    },
+    "scope": "Experimental controller; no complete native-conformance claim. Existing architectural behavior is intended to remain unchanged, with separately declared mechanical width and non-synthesis initialization repairs."
+  },
+  "observed_simulation": {
+    "positive_cases": 18,
+    "positive_receipt_sha256": "674c16ed0eb190b8d79a6274f33dc0d39ae7179f69bd3bd159ba51eb6cbafe27",
+    "negative_cases": 8,
+    "expected_rejections": 7,
+    "failed_sensitivity_cases": 1,
+    "negative_ledger_sha256": "3d1b28f52a9ffce00282fad1f7d5e45997c8d76f3e53ffe4c1a187e762c59614",
+    "negative_results": [
+      {
+        "id": 1,
+        "status": "PASS",
+        "receipt_sha256": "3f1cffa5e093afd0e91f2a6e39d330dd23d1cb26ba85a437e31898a9a4c7bdbf"
+      },
+      {
+        "id": 2,
+        "status": "PASS",
+        "receipt_sha256": "9ca8a9792f5e6b526fede3484d56505c89b4ac9eb0c03be91a09022620904f56"
+      },
+      {
+        "id": 3,
+        "status": "FAIL",
+        "receipt_sha256": "395908bf12de817be7502e82466b53a47636429a6fade149b035225e4011cd73"
+      },
+      {
+        "id": 4,
+        "status": "PASS",
+        "receipt_sha256": "7fbedb8492107b6fdfda203c9429fef411e48dd3a4a7c75c574795d88d181ff0"
+      },
+      {
+        "id": 5,
+        "status": "PASS",
+        "receipt_sha256": "56c66d090a0fbcf22e4c655294d5c1ee7a665022eb9b0edb370595f516a5547c"
+      },
+      {
+        "id": 6,
+        "status": "PASS",
+        "receipt_sha256": "e4803e0c62cde87aeea15923161d352100dfe841e16f5cee8d1ca80d53e61e53"
+      },
+      {
+        "id": 7,
+        "status": "PASS",
+        "receipt_sha256": "0f4f0954bbab101075789b1f186e18a8a689fee8d3149899d3775341fcbff84b"
+      },
+      {
+        "id": 8,
+        "status": "PASS",
+        "receipt_sha256": "a7fdf6eacaa7bbca2e935fc18d28d18ec3d67fc849fe2d63b08a859be35407f4"
+      }
+    ],
+    "M3": "Original integrated omission finishes normally: old write-debt/added-write contrast is masked by ending=0 and no boundary permission. This FAIL is retained, not reclassified as an integration rejection.",
+    "synthetic_component": {
+      "vectors": 12288,
+      "contrasts": 35,
+      "positive_receipt_sha256": "55ca27406c9ce17dff2cb8cbb6dad13851b60e82a7f468ae7b6a1181a333b2ef",
+      "negative_receipt_sha256": "6fd034612a42d9beca5662d9ba3f7d3feabd56ace407e5c3cf5cb465e30d2abb",
+      "scope": "Actual HDL compose component and one omission; independent integer addition oracle. Synthetic fields do not establish integrated M3 sensitivity or ROM/native reachability."
+    }
+  },
+  "qualification": {
+    "original_gate": "BLOCKED",
+    "native": "NOT_ESTABLISHED",
+    "coupled_POPF_IRQ": "NOT_ESTABLISHED",
+    "physical": "Separately authorized diagnostic measurement cannot waive original failed qualification.",
+    "publication": "User-authorized independent experimental draft; existing default CONTROL G6 pass is not accepted staged-RTL promotion, merge or flash authorization.",
+    "correctness_bar": "SILICON MATCH remains the correctness bar; current evidence is engineering simulation and diagnostic physical measurement, not silicon matching."
+  },
+  "physical": {
+    "default_CONTROL": {
+      "receipt_sha256": "77ede5582b64fe368a18ef3a63777c881a11d34297ca755a59b4dd7205872a0a",
+      "fmax_mhz": 39.54,
+      "worst_setup_ns": 8.315,
+      "setup_tns_ns": 0,
+      "hold_tns_ns": 0,
+      "minimum_hold_ns": 0.256,
+      "alms": 10335,
+      "scope": "Default-system CONTROL only; experimental LOCK is pruned. 32 unconstrained inputs and 53 outputs plus 476 ignored absent-entity assignments prevent full-board/I/O closure claims. This does not establish candidate timing or 50 MHz pin performance."
+    },
+    "staged_candidate_first_fit": {
+      "status": "FAIL_SINGLE_CYCLE_20_NS",
+      "actual_tool_rc": 0,
+      "receipt_sha256": "139bf10cbbf8852a398255eae2071eb65c5db8883f06fe88ec195f3499c91a69",
+      "root_audit_sha256": "ee7e21f7fc70efae538a9b4d3bcaab29ce00c8022f85330f06c689123a943131",
+      "fmax_mhz": 21.25,
+      "fmax_corner": "Slow 1100mV 100C",
+      "worst_setup_ns": -27.067,
+      "worst_setup_tns_ns": -17840.629,
+      "minimum_hold_all_corners_ns": 0.163,
+      "hold_tns_all_corners_ns": 0,
+      "alms": 6644,
+      "fitter_registers": 1477,
+      "virtual_pins": 78,
+      "unconstrained_paths_all_types": 0,
+      "all_corner_metrics": [
+        {
+          "type": "Slow 1100mV 100C Model Setup 'SYS'",
+          "slack_ns": -27.067,
+          "tns_ns": -17840.629
+        },
+        {
+          "type": "Slow 1100mV 100C Model Hold 'SYS'",
+          "slack_ns": 0.429,
+          "tns_ns": 0.0
+        },
+        {
+          "type": "Slow 1100mV 100C Model Minimum Pulse Width 'SYS'",
+          "slack_ns": 8.636,
+          "tns_ns": 0.0
+        },
+        {
+          "type": "Slow 1100mV -40C Model Setup 'SYS'",
+          "slack_ns": -26.301,
+          "tns_ns": -17151.494
+        },
+        {
+          "type": "Slow 1100mV -40C Model Hold 'SYS'",
+          "slack_ns": 0.192,
+          "tns_ns": 0.0
+        },
+        {
+          "type": "Slow 1100mV -40C Model Minimum Pulse Width 'SYS'",
+          "slack_ns": 8.579,
+          "tns_ns": 0.0
+        },
+        {
+          "type": "Fast 1100mV 100C Model Setup 'SYS'",
+          "slack_ns": -5.849,
+          "tns_ns": -2635.383
+        },
+        {
+          "type": "Fast 1100mV 100C Model Hold 'SYS'",
+          "slack_ns": 0.178,
+          "tns_ns": 0.0
+        },
+        {
+          "type": "Fast 1100mV 100C Model Minimum Pulse Width 'SYS'",
+          "slack_ns": 8.822,
+          "tns_ns": 0.0
+        },
+        {
+          "type": "Fast 1100mV -40C Model Setup 'SYS'",
+          "slack_ns": -1.783,
+          "tns_ns": -501.631
+        },
+        {
+          "type": "Fast 1100mV -40C Model Hold 'SYS'",
+          "slack_ns": 0.163,
+          "tns_ns": 0.0
+        },
+        {
+          "type": "Fast 1100mV -40C Model Minimum Pulse Width 'SYS'",
+          "slack_ns": 8.807,
+          "tns_ns": 0.0
+        }
+      ],
+      "scoped_default_corner_minimum_slacks_ns": {
+        "SYS_sampler": 1.892,
+        "CE_sampler": 14.197,
+        "from_stage": 7.353,
+        "to_stage": 1.712
+      },
+      "scoped_reports": "Same first fit, report-only copied analysis: 36 selected sets and 928 paths, actual point coverage, raw report and TSV counts/minima agree. All four corners have positive scoped setup/hold; this is scoped diagnostic evidence, not whole-design closure.",
+      "clock_interpretation": "CPU10 via CEdiv5 is the requested functional profile, not achieved hardware performance. Fmax21.25 is the fitted SYS limit under all-20ns constraints, not NEC nominal CPU speed. No qualified internal CE100ns exceptions were used; any future exception needs launch/capture proof.",
+      "scoped_allcorner_minimum_slacks_ns": {
+        "stage_capture": {
+          "setup": 1.712,
+          "hold": 0.164
+        },
+        "lock_sys": {
+          "setup": 1.892,
+          "hold": 0.222
+        },
+        "stage_launch": {
+          "setup": 7.353,
+          "hold": 0.164
+        },
+        "lock_ce": {
+          "setup": 14.197,
+          "hold": 0.171
+        }
+      },
+      "allcorner_report_receipt_sha256": "2444fc861290c77e9f7188067ed187463ae3acc6f3190af9cb6d02f2f620fd15",
+      "allcorner_root_audit_sha256": "d12cea679a016e29c9f386b3f7e74fbac968d90218ceecddb81419aacdc9cbb2",
+      "allcorner_critical_review_sha256": "bd2218f47759319777e584f50c347c8ff0e624a1a44e80e150b8defde7435c09",
+      "retention": {
+        "fitted_stage_nodes": 42,
+        "source_state_bits": 39,
+        "replicas": 3,
+        "consumer_registers": 2
+      },
+      "global_path_attribution": {
+        "scope": "Slow100 reported global paths, 48 levels ending at r_kind bits/replicas",
+        "worst_from": "ROM PORT_A_WRITE_ENABLE_REG",
+        "worst_to": "r_kind[0] DUPLICATE",
+        "data_delay_ns": 45.313,
+        "classification": "Physical source attribution is inferred from fitted report/node names. Async source ROM has no source clock; synthetic launch is not directly mapped to a CE-enabled source flop. Destination ss_we||srst||ce enable alone does not prove a multicycle exception."
+      }
+    },
+    "required_profile_closure": "20 ns applicable single-cycle endpoints; no universal 100 ns slack, no clock or G6 relaxation.",
+    "constraints": "The candidate SDC keeps every path single-cycle at 20 ns; no timing exceptions or PLLs are introduced. No firmware, private ROM assets or chip captures are added."
+  },
+  "reproduction": {
+    "published_bench_sha256": "43afe601066c16e239f4f38f60bdb5aad028b3b9f0019d5b1983159e834d3e6c",
+    "module": "tb_staged_integration",
+    "cwd": "repository root; existing public ROM table paths resolve here",
+    "actual_environment": "Windows MSYS clang64, Verilator 5.050, C++20",
+    "illustrative_build": "verilator --binary --timing --assert --compiler clang -Wall -Wno-UNUSEDSIGNAL -Wno-VARHIDDEN -Wno-TIMESCALEMOD -Wno-BLKSEQ -Wno-DECLFILENAME -Wno-UNUSEDPARAM -DV30_STAGED_LOCK_DIV5 -Ihdl/rtl/ucore -Ihdl/tb --top-module tb_staged_integration -CFLAGS -std=c++20 hdl/rtl/ucore/v30u_ss_pkg.sv hdl/rtl/ucore/v30_core.sv hdl/rtl/ucore/v30u_biu.sv hdl/rtl/ucore/v30u_ucrom.sv hdl/rtl/ucore/v30u_eu.sv hdl/rtl/nec_bus.sv hdl/tb/tb_staged_lock_div5.sv",
+    "runs": "Use the fixed positive argv list below; negative mutations are separate sealed diagnostic artifacts, not selected by merely setting a positive-bench flag.",
+    "positive_argv": [
+      {
+        "id": 0,
+        "family": 0,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 1,
+        "family": 0,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 2,
+        "family": 0,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 3,
+        "family": 1,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 4,
+        "family": 1,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 5,
+        "family": 1,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 6,
+        "family": 2,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 7,
+        "family": 2,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 8,
+        "family": 2,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 9,
+        "family": 3,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 10,
+        "family": 3,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 11,
+        "family": 3,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 0
+      },
+      {
+        "id": 12,
+        "family": 3,
+        "waits": 0,
+        "withdraw": 1,
+        "resetcase": 0
+      },
+      {
+        "id": 13,
+        "family": 3,
+        "waits": 1,
+        "withdraw": 1,
+        "resetcase": 0
+      },
+      {
+        "id": 14,
+        "family": 3,
+        "waits": 3,
+        "withdraw": 1,
+        "resetcase": 0
+      },
+      {
+        "id": 15,
+        "family": 0,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 1
+      },
+      {
+        "id": 16,
+        "family": 0,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 1
+      },
+      {
+        "id": 17,
+        "family": 0,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 1
+      }
+    ],
+    "standalone_project": "From hdl: quartus_sh --flow compile staged_lock_demux50 (Quartus 22.1, Cyclone V 5CSEBA6U23I7, seed 1). retention_audit.tcl is a bounded nonempty-register/path audit, not complete connectivity proof.",
+    "publication_scope": "Sources are byte-exact reviewed copies; the renamed public bench/module pairing is not claimed to have been rebuilt or retested. Illustrative command is not Linux-tested. No firmware or ROM assets are included.",
+    "warning_policy": "Inherited reviewed metadata/style warnings listed in illustrative command; structural width/latch/UNOPTFLAT warnings are not waived. No zero-warning universal claim.",
+    "run_example": "obj_dir/Vtb_staged_integration +family=0 +waits=0 +negative=0 +withdraw=0 +resetcase=0; execute one run for each of the 18 fixed positive_argv entries, substituting its values."
+  },
+  "history": "Prior instrument failures and M3 integration FAIL remain retained in local evidence. This checkpoint publishes no captured chip data, firmware, or physical bitstreams.",
+  "provenance": {
+    "nine_RTL_freeze_sha256": "4fc8ba931d329c1722e2de057a64e4ba90d4f44be328b00d38a23675f7ddfc90",
+    "positive_build_recipe_sha256": "367e39cc32c773faf60d79f5a0bb59524a9d27f5562705fe9fd5b85a7d6246d9",
+    "positive_run_recipe_sha256": "bca7e2fc02475f7b076a8077227304ff61322216e2c39190d752ecc7d5c4e357",
+    "component_audit_sha256": "7013ac3b424ba1ad9237740078cd8bb4409995d57b85e0acba3b85a78f5e923a",
+    "current_nine_mapping": "staged_lock_current_interface_2026-10-11.json"
+  }
+}

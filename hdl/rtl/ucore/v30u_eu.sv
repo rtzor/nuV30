@@ -60,7 +60,15 @@
 //
 //============================================================================
 
+`ifdef V30_STAGED_LOCK_DIV5
+`include "v30u_staged_lock_pkg.svh"
+`endif
 module v30u_eu (
+`ifdef V30_STAGED_LOCK_DIV5
+    output v30u_staged_lock_pkg::primitive_t staged_lock_primitive_o,
+    output logic [3:0] staged_lock_ref_boundary_o,
+    output staged_lock_acquire_o,staged_lock_recognition_o,
+`endif
     input             clk,
     input             ce,
     input             srst,
@@ -943,7 +951,7 @@ wire irq_rep_chn = irq_nmi_lvl || (int_p[1] && psw[FIE]);   // edge = c+2
 wire row_q1 = e_have1 && (e_s1 == 5'd7);
 wire row_q2 = e_have2 && (e_s2 == 4'd5);
 wire [1:0] row_qn = {1'b0, row_q1} + {1'b0, row_q2};
-wire row_need_q  = (st == S_ROW) && ({1'b0, rowq} < row_qn);
+wire row_need_q  = (st == S_ROW) && ({1'b0, rowq} < {1'b0, row_qn});
 
 // The bus rows.  [-06-] commits OPR to the r/m operand only when that operand
 // is memory (the 8F mod==3 ghost).
@@ -3198,7 +3206,8 @@ initial if ($test$plusargs("brktrace")) brktrace = 1;
 // the CE clock index, on the same contract the eutrace line number carries
 // ("row index == CE clock index"): cleared by `srst`, advanced once per
 // enabled clock.  Simulation only.
-int unsigned ce_clk = 0;
+int unsigned ce_clk;
+initial ce_clk = 0;
 // §86.G -- THE TWO FLAG-WRITE PROBES, and they are why `mc1/721` is decided.
 // `1BL` reports every ONE_BYTE_LOGIC execute strobe's PSW before and after;
 // `PE` reports every POST-`E` discharge's, with the row it is discharging.
@@ -3222,7 +3231,8 @@ reg trc_1bld_hit, trc_1bld_ripe, trc_1bld_seen, trc_1bld_arm, trc_1bld_smp;
 reg trc_1bld_shd;   // ...and `irq_shadow_n`, which §7.8 names by hand
 reg chain_report = 0;
 initial if ($test$plusargs("chaindepth")) chain_report = 1;
-reg [3:0] chain_hi = 4'd0;
+reg [3:0] chain_hi;
+initial chain_hi = 4'd0;
 reg [3:0] chain_used;   // <- now a COMB output of the next-state block
 // the eutrace SNAPSHOT: the flop-valued fields the trace line used to
 // read MID-EDGE (after blocks (a)/(b), before the chain).  Everything
@@ -4130,4 +4140,36 @@ wire _unused_eu = &{1'b0, q_cnt, halted, lock_pfx, nmi_p[2:0], int_p[0],
                     A_SHL6, A_NOT, A_PASS, C_OPC, I_SUSP, I_FLUSH, E_MEMR,
                     TEST_NONE, tk, ti, ts, te, tb, ea, rseg, nloc};
 
+
+`ifdef V30_STAGED_LOCK_DIV5
+always_comb begin
+ staged_lock_primitive_o='0;
+ staged_lock_primitive_o.is_row=(st==S_ROW);
+ staged_lock_primitive_o.is_defer=(st==S_EPOP)||(st==S_TAIL_POP);
+ staged_lock_primitive_o.is_tail=(st==S_TAIL_W);
+ staged_lock_primitive_o.is_opc=(st==S_OPC_POP);
+ staged_lock_primitive_o.ending=e_e||ext4s_early_e;
+ staged_lock_primitive_o.opc_valid=opc_valid;
+ staged_lock_primitive_o.pend_new=pend_new;
+ staged_lock_primitive_o.fresh=opr_fresh;
+ staged_lock_primitive_o.writes_opr=row_wr_opr;
+ staged_lock_primitive_o.blocked=row_blocked;
+ staged_lock_primitive_o.row_q_ok=(rowq>=row_qn);
+ staged_lock_primitive_o.pre_wait=row_pre_wait;
+ staged_lock_primitive_o.slot_wait=row_slot_wait;
+ staged_lock_primitive_o.wr_out=wr_out;
+ staged_lock_primitive_o.wr_add=row_wr_add[1:0];
+ staged_lock_primitive_o.wr_done=eu_wr_done_n;
+ staged_lock_primitive_o.wait_read=nr_wait;
+ staged_lock_primitive_o.free_opr=opr_free_now;
+ staged_lock_primitive_o.armed=bnd_armed;
+ staged_lock_primitive_o.flush=row_flush;
+ staged_lock_ref_boundary_o={bnd_row,((st==S_EPOP)||(st==S_TAIL_POP))&&retire_ok_n,tailw_go&&retire_ok_n,bnd_opc};
+end
+assign staged_lock_recognition_o=bnd_take;
+assign staged_lock_acquire_o=!mode8080&&q_pop&&q_ripe&&q_first&&
+ pla3_is_prefix(pla3_native(q_byte))&&
+ ((pla3_xop(pla3_native(q_byte))==PLA3_BL1_LOCK)||
+  (pla3_xop(pla3_native(q_byte))==PLA3_BL1_LOCK_ALIAS));
+`endif
 endmodule

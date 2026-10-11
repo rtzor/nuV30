@@ -21,8 +21,8 @@ case (e_d1)
     5'd18: begin                                    // wr_operand(R, v)
         case (r_kind_n)
             OK_REG:  if (r_byte_n) begin
-                         if (r_idx_n[2]) gpr_n[r_idx_n[1:0]][15:8] = v1[7:0];
-                         else          gpr_n[r_idx_n[1:0]][7:0]  = v1[7:0];
+                         if (r_idx_n[2]) gpr_n[{1'b0, r_idx_n[1:0]}][15:8] = v1[7:0];
+                         else          gpr_n[{1'b0, r_idx_n[1:0]}][7:0]  = v1[7:0];
                      end else gpr_n[r_idx_n] = v1;
             OK_SREG: sreg_n[r_idx_n[1:0]] = v1;
             // `wr_operand`'s OPR tag is the OPERAND REF's OWN width, not the
@@ -35,8 +35,8 @@ case (e_d1)
     5'd19: begin                                    // wr_operand(M, v)
         case (m_kind_n)
             OK_REG:  if (m_byte_n) begin
-                         if (m_idx_n[2]) gpr_n[m_idx_n[1:0]][15:8] = v1[7:0];
-                         else          gpr_n[m_idx_n[1:0]][7:0]  = v1[7:0];
+                         if (m_idx_n[2]) gpr_n[{1'b0, m_idx_n[1:0]}][15:8] = v1[7:0];
+                         else          gpr_n[{1'b0, m_idx_n[1:0]}][7:0]  = v1[7:0];
                      end else gpr_n[m_idx_n] = v1;
             OK_SREG: sreg_n[m_idx_n[1:0]] = v1;
             OK_MEM:  begin opr_n = v1; opr_byte_n = m_byte_n;
