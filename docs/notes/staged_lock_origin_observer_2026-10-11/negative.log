@@ -1,0 +1,48 @@
+SYS_PRE n=0 ce=0 reset=1 ss=0 st=0 next=0 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=1 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=0 st=31 next=31 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=1 ce=0 reset=1 ss=0 st=31 next=31 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=1 st=31 next=31 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=2 ce=0 reset=0 ss=0 st=31 next=31 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=2 st=31 next=31 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=3 ce=0 reset=0 ss=1 st=31 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=3 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=4 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=4 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=5 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=5 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=6 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=6 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=7 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=7 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=8 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=8 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=9 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=9 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=10 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=10 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=11 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=11 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=12 ce=0 reset=0 ss=1 st=30 next=30 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=12 st=30 next=30 bnd=0 pop_offer=0 poste=0 owed=0
+SYS_PRE n=13 ce=0 reset=0 ss=1 st=30 next=25 opc=0 nextopc=0 bnd=0 epop=0 retire=1 pop_offer=0 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=13 st=25 next=25 bnd=1 pop_offer=1 poste=0 owed=0
+DRY_ANCHOR st=25 next=25 offer=1 ripe=0 pop=1
+SYS_PRE n=14 ce=0 reset=0 ss=0 st=25 next=25 opc=0 nextopc=0 bnd=1 epop=1 retire=1 pop_offer=1 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=14 st=25 next=25 bnd=1 pop_offer=1 poste=0 owed=0
+SYS_PRE n=15 ce=1 reset=0 ss=0 st=25 next=25 opc=0 nextopc=0 bnd=1 epop=1 retire=1 pop_offer=1 accepted=0 poste=0 owed=0 chain=1
+SYS_POST n=15 st=25 next=25 bnd=1 pop_offer=1 poste=0 owed=0
+ORIGINAL_ANCHOR st=25 next=33 epop=1 retire=1 pop=1 nextopc=0
+SYS_PRE n=16 ce=0 reset=0 ss=0 st=25 next=33 opc=0 nextopc=0 bnd=1 epop=1 retire=1 pop_offer=1 accepted=0 poste=0 owed=0 chain=6
+SYS_POST n=16 st=25 next=33 bnd=1 pop_offer=1 poste=0 owed=0
+SYS_PRE n=17 ce=0 reset=0 ss=0 st=25 next=33 opc=0 nextopc=0 bnd=1 epop=1 retire=1 pop_offer=1 accepted=0 poste=0 owed=0 chain=6
+SYS_POST n=17 st=25 next=33 bnd=1 pop_offer=1 poste=0 owed=0
+SYS_PRE n=18 ce=0 reset=0 ss=0 st=25 next=33 opc=0 nextopc=0 bnd=1 epop=1 retire=1 pop_offer=1 accepted=0 poste=0 owed=0 chain=6
+SYS_POST n=18 st=25 next=33 bnd=1 pop_offer=1 poste=0 owed=0
+SYS_PRE n=19 ce=0 reset=0 ss=0 st=25 next=33 opc=0 nextopc=0 bnd=1 epop=1 retire=1 pop_offer=1 accepted=0 poste=0 owed=0 chain=6
+SYS_POST n=19 st=25 next=33 bnd=1 pop_offer=1 poste=0 owed=0
+SYS_PRE n=20 ce=1 reset=0 ss=0 st=25 next=33 opc=0 nextopc=0 bnd=1 epop=1 retire=1 pop_offer=1 accepted=1 poste=0 owed=0 chain=6
+SYS_POST n=20 st=33 next=0 bnd=0 pop_offer=0 poste=1 owed=1
+TOKEN_SENSITIVE_ANCHOR correct=0 naive=1 actualst=33
+[412000] %Fatal: tb_boundary_origin_observer.sv:138: Assertion failed in tb_boundary_origin_observer: EXPECTED_STALE_TOKEN_FAIL
+%Error: hdl/tb/tb_boundary_origin_observer.sv:138: Verilog $stop
+Aborting...
