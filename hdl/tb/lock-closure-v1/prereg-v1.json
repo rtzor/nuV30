@@ -1,0 +1,308 @@
+{
+  "schema": "portable-prereg-derivative-v1",
+  "source_sha256": "28ef59980e2aff31e0f7bab3e8675c61175e55e08d5c1c00e4c9c0eba45f1921",
+  "derivative": "Portable parsed-JSON derivative: absolute source root becomes repository-root; two source-evidence paths become basename identifiers. Stimuli/predictions unchanged; original source-stage statuses remain historical.",
+  "original": {
+    "status": "SOURCE_ONLY",
+    "positive_cases": [
+      {
+        "id": 0,
+        "family": 0,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 1,
+        "family": 0,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 2,
+        "family": 0,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 3,
+        "family": 1,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 4,
+        "family": 1,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 5,
+        "family": 1,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 6,
+        "family": 1,
+        "waits": 0,
+        "withdraw": 1,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 7,
+        "family": 1,
+        "waits": 1,
+        "withdraw": 1,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 8,
+        "family": 1,
+        "waits": 3,
+        "withdraw": 1,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 9,
+        "family": 2,
+        "waits": 0,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 10,
+        "family": 2,
+        "waits": 1,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 11,
+        "family": 2,
+        "waits": 3,
+        "withdraw": 0,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 12,
+        "family": 2,
+        "waits": 0,
+        "withdraw": 1,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 13,
+        "family": 2,
+        "waits": 1,
+        "withdraw": 1,
+        "resetcase": 0,
+        "pulse": 0
+      },
+      {
+        "id": 14,
+        "family": 2,
+        "waits": 3,
+        "withdraw": 1,
+        "resetcase": 0,
+        "pulse": 0
+      }
+    ],
+    "pulse_component": {
+      "family": 1,
+      "waits": 0,
+      "withdraw": 0,
+      "resetcase": 0,
+      "pulse": 1,
+      "scope": "Natural EU/BIU recognition sensitivity; exits at original pending-only contrast; not IRQ-entry or pin proof"
+    },
+    "negative_controls": [
+      {
+        "name": "M3",
+        "case": {
+          "id": 0,
+          "family": 0,
+          "waits": 0,
+          "withdraw": 0,
+          "resetcase": 0,
+          "pulse": 0
+        },
+        "source": "v30u_staged_lock_pkg.svh",
+        "old": "after_write={1'b0,p.wr_out}+{1'b0,p.wr_add};",
+        "new": "after_write={1'b0,p.wr_out};",
+        "anchor": "M3_ORIGINAL_SENSITIVE_ANCHOR",
+        "fatal": "FIXTURE_CURRENT_PERMISSION_FAIL"
+      },
+      {
+        "name": "N_PENDING",
+        "case": {
+          "family": 1,
+          "waits": 0,
+          "withdraw": 0,
+          "resetcase": 0,
+          "pulse": 1
+        },
+        "source": "v30u_eu.sv",
+        "old": "(int_p[2] ||\n                    (intr_pending && (rep_kind == REP_NONE) && !ie_p[3]))",
+        "new": "(int_p[2])",
+        "anchor": "PENDING_ORIGINAL_SENSITIVE_ANCHOR",
+        "fatal": "FIXTURE_IRQ_RECOGNITION_FAIL"
+      },
+      {
+        "name": "N_VETO",
+        "case": {
+          "id": 9,
+          "family": 2,
+          "waits": 0,
+          "withdraw": 0,
+          "resetcase": 0,
+          "pulse": 0
+        },
+        "source": "v30u_eu.sv",
+        "old": "ie_p[2] && psw[FIE];",
+        "new": "ie_p[2];",
+        "anchor": "FALL_ORIGINAL_SENSITIVE_ANCHOR",
+        "fatal": "FIXTURE_IRQ_RECOGNITION_FAIL"
+      }
+    ],
+    "source": "repository-root",
+    "timeout_SYS": 100000,
+    "tools_must_wait_ROOT": true,
+    "no_negative_sources_created": true,
+    "missing_anchor": "COVERAGE_BLOCKED",
+    "old_M3_status": "FAIL_RETAINED",
+    "native_qualification": false,
+    "addenda": [
+      "local-source-evidence:falling-pulse-repair-proposal-v1.json",
+      "local-source-evidence:m3-firstfatal-source-addendum-v1.json"
+    ],
+    "falling_repair": {
+      "status": "PROPOSED_SOURCE_ONLY_AWAIT_ROOT_CRITICAL_REVIEW",
+      "scope_correction": "Infinite held IRQ completion past terminal HALT contradicts existing raw-INT HALT wake; not a demonstrated POPF/IF veto RTL defect. No change to zeroINTA bar or20sample finish.",
+      "unchanged_cases": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        15
+      ],
+      "replacement_falling_cases": [
+        {
+          "id": 9,
+          "family": 2,
+          "waits": 0,
+          "withdraw": 0,
+          "resetcase": 0,
+          "pulse": 0
+        },
+        {
+          "id": 10,
+          "family": 2,
+          "waits": 1,
+          "withdraw": 0,
+          "resetcase": 0,
+          "pulse": 0
+        },
+        {
+          "id": 11,
+          "family": 2,
+          "waits": 3,
+          "withdraw": 0,
+          "resetcase": 0,
+          "pulse": 0
+        },
+        {
+          "id": 12,
+          "family": 2,
+          "waits": 0,
+          "withdraw": 1,
+          "resetcase": 0,
+          "pulse": 0
+        },
+        {
+          "id": 13,
+          "family": 2,
+          "waits": 1,
+          "withdraw": 1,
+          "resetcase": 0,
+          "pulse": 0
+        },
+        {
+          "id": 14,
+          "family": 2,
+          "waits": 3,
+          "withdraw": 1,
+          "resetcase": 0,
+          "pulse": 0
+        }
+      ],
+      "disjoint_packet": {
+        "base": 512,
+        "reset_hex": "EA00020000",
+        "hex": "FAB800008ED88EC08ED0BC000AFBF8F8F8F8F8F8F8F8B8020050F09DF8F8F8F8F8F8F8F8BB6824F4",
+        "stack_SP": 2560,
+        "flag_operand_address": 2558,
+        "AX": 2,
+        "BX": 9320,
+        "PSW": 61442,
+        "writes": 1,
+        "write_bytes": 2,
+        "INTA": 0,
+        "IRQ_entries": 0,
+        "frame_absent": true,
+        "RAM_09FE_09FF": 2,
+        "RAM_0600": 0
+      },
+      "fixed_IRQ_schedule": {
+        "rise": "First falling edge actual run && TS_T2(2) && !r_cur_wr && MEMR(5) && publicADDR09FE. No candidatecache trigger.",
+        "R": "First acceptedCE original rd_edge_psw_take for falling packet; existing immediate PSW/oldIE sample/STATUS checks unchanged.",
+        "hold": "Keep actual coreIRQ1 through R,R+1,R+2,R+3,R+4 acceptedCE; no sensitive-marker triggered early drop.",
+        "drop": "Single stimulus owner schedules NBA coreIRQ0 at posedge acceptedCE R+4 plus1ns. No wait-specific SYS count.",
+        "drain": "For later acceptedCE R+5/R+6/R+7, shifting {int_p[2:0],pin_int} removes held sample; require int_p[2]==0 at first original HALTED and20 consecutive finish observations.",
+        "withdraw": "Same source earliest eligibleMEMR readedge phase1OR2 and nextfall restore; only address changes07FE\u219209FE for disjoint falling packet."
+      },
+      "mandatory_anchors": [
+        "original T2 rise with IF1 and oldIE mature",
+        "accepted R imageIF0, oldIF1, captured oldIE sample + immediate PSW/IE/STATUS pass",
+        "original mature veto intp2=1/ie2=1/liveIF0 before drop; no IRQentry/INTA throughout",
+        "accepted R+4 and +1ns actualIRQ drop with independent CE counter",
+        "original firstHALTED intp2=0, inputIRQ0; 20sample finish unchanged",
+        "one write2bytes, stack09FE0002, AX0002/BX2468/SP0A00/PSWF002, noIRQframe, counter0600zero, mirror exact"
+      ],
+      "minimum_gap_source_proof": "POPF read R precedes pending OPR\u2192FLAGS retirement and successor decode. Each of eight literal CLC F8 executes S_DECODE2 and stops, then S_1BL_CHG is charged/chain0-only, before subsequent opcode. Eight CLC therefore provide at least16 charged CE edges after successor decode; HALT cannot precede the R+7 IRQpipe drain absent a control-flow IRQ/trap (those explicitly fail zeroentry/zeroINTA bars). Queue waits only extend this lower bound. No observed elapsed delay used to select schedule.",
+      "negative_protocol": "Previously selected three sole mutations unchanged. N_VETO uses disjoint falling packet and must exhibit original mature veto before sole FIXTURE_IRQ_RECOGNITION_FAIL. Pending component remains recognition-only, M3 fixed PUSHF remains disjoint from historical failed STOS. Fresh recipes required before any tools.",
+      "coverage_blockers": [
+        "No original mature veto before fixed drop => BLOCK, no adaptive schedule/opcode replacement",
+        "First HALT before drained pipeline or anyIRQentry/INTA => FAIL; no finish shortening",
+        "Missing withdrawal natural window => BLOCK, no source waiver"
+      ],
+      "native_qualification": false,
+      "tools_executed": false,
+      "F_edits": false,
+      "old_six_failures_reinterpreted_as_PASS": false
+    }
+  }
+}

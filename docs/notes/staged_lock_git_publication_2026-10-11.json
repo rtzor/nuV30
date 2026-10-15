@@ -1,0 +1,173 @@
+{
+  "schema": "staged-lock-git-publication-newline-v1",
+  "status": "NEWLINE_ONLY_PUBLICATION_DERIVATIVE_NOT_REBUILT_OR_RETESTED",
+  "source_manifest_sha256": "10951c9e3debcea612bb9a7580739b66ba4d1aa45b2dd7f10868b072a97f3b93",
+  "files": {
+    "hdl/retention_audit.tcl": {
+      "tested_windows_raw_sha256": "a8c4e5a3ad8e65ed238168816e247bce983038c57a0ac50bb12483c06f24573b",
+      "canonical_git_lf_sha256": "de3cb441732832267b9071499e862468c20076efe0796b24144b7aff2658a290",
+      "raw_bytes": 1087,
+      "canonical_bytes": 1074,
+      "crlf_pairs": 13,
+      "canonical_lf_positions_sha256": "2c8309e2e65d1f4729e2fecb2834d699781a692dfa0366f8e1d2ee7aee3b08da",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/staged_lock_demux50.qpf": {
+      "tested_windows_raw_sha256": "cd8a7cce7cada946530b4b231094104cbd08c67cdbc71985a77cb47e2c573202",
+      "canonical_git_lf_sha256": "03249c585622214060c342a58e358d3535d7bf52d06389151b005a7105190f93",
+      "raw_bytes": 68,
+      "canonical_bytes": 66,
+      "crlf_pairs": 2,
+      "canonical_lf_positions_sha256": "ceb5c8e466f5253391fee333f1748fee2e518b0a940ca7088adf68f856ef9cc5",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/staged_lock_demux50.qsf": {
+      "tested_windows_raw_sha256": "c9852283fe0e4687f116ba45797053d48bb4305175312c151acb584612041d4f",
+      "canonical_git_lf_sha256": "9818c3d35f30429fe6909791c19f258748cec5f82cd526e502dfd2393609308b",
+      "raw_bytes": 2093,
+      "canonical_bytes": 2058,
+      "crlf_pairs": 35,
+      "canonical_lf_positions_sha256": "1f22270a9583de83adea85aed6dfd290100c30cf7e9bedb6258c9a2c51cf9aa6",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/staged_lock_demux50.sdc": {
+      "tested_windows_raw_sha256": "21584cd8386d246a8fc730b27d1517bb8defb607a3784172185192b1c663cf44",
+      "canonical_git_lf_sha256": "77ad2ce36e4506c500fcc6492d6e56c059319ff000125872285910a80a989618",
+      "raw_bytes": 866,
+      "canonical_bytes": 857,
+      "crlf_pairs": 9,
+      "canonical_lf_positions_sha256": "dde9bae170adc82796e5f7ef4da5d8b15f315b38c7a28f1114beebda6917bbc2",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/staged_lock_demux50.sv": {
+      "tested_windows_raw_sha256": "b6f83b2371b3b015e07e13f4155a77ad59375a08fdfb2d92e9c7666cf1831b5a",
+      "canonical_git_lf_sha256": "cce041bc6bee4895acdf3a81726148c047315afd99012dc42cbcb2007d0249bf",
+      "raw_bytes": 1609,
+      "canonical_bytes": 1567,
+      "crlf_pairs": 42,
+      "canonical_lf_positions_sha256": "583e8fc37973ce773acc9d2d2ac8c1d469556711aad9f991dd08329f7e96505c",
+      "inverse_verified_raw_exact": true
+    },
+    "docs/notes/staged_lock_current_interface_2026-10-11.json": {
+      "tested_windows_raw_sha256": "9b3aa86cc78410e360eee35030b62cdd7a3f80954d5d25e9767a38155fb136e2",
+      "canonical_git_lf_sha256": "9b3aa86cc78410e360eee35030b62cdd7a3f80954d5d25e9767a38155fb136e2",
+      "raw_bytes": 1611,
+      "canonical_bytes": 1611,
+      "crlf_pairs": 0,
+      "canonical_lf_positions_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "inverse_verified_raw_exact": true
+    },
+    "docs/notes/staged_lock_div5_experiment_2026-10-11.json": {
+      "tested_windows_raw_sha256": "dbf90753495e708dec3f328834fd35ad3666367eda909eb9e4dff23a15295d8b",
+      "canonical_git_lf_sha256": "dbf90753495e708dec3f328834fd35ad3666367eda909eb9e4dff23a15295d8b",
+      "raw_bytes": 15613,
+      "canonical_bytes": 15613,
+      "crlf_pairs": 0,
+      "canonical_lf_positions_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/system_large.sv": {
+      "tested_windows_raw_sha256": "f5c3fe0ef608890192cc477a485b8bc882979c7f76aeede2907be53c206b85a5",
+      "canonical_git_lf_sha256": "36d012ac4338708b4ccdfb192a8bfde788592fed4e095b40187a3de9e739add0",
+      "raw_bytes": 32360,
+      "canonical_bytes": 31567,
+      "crlf_pairs": 793,
+      "canonical_lf_positions_sha256": "d474f96cb5a8c9992da76ee143154e4158bafe82025d2d870d7469740de5a586",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/tb/literal-programs-v2.svh": {
+      "tested_windows_raw_sha256": "275d9491b5bc3e301f2f01c28786c9706ac91367b963ec63789d4cc87780f9ce",
+      "canonical_git_lf_sha256": "fd112b884834510cec2897374e5e7c48dfb66b65396533f86b74ea29292ed6d4",
+      "raw_bytes": 4123,
+      "canonical_bytes": 4035,
+      "crlf_pairs": 88,
+      "canonical_lf_positions_sha256": "b1a01dc259cebe327b02d4c952d842c910ab2e2c7125daef1ec0f99ef8cc0f78",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/tb/tb_staged_lock_div5.sv": {
+      "tested_windows_raw_sha256": "43afe601066c16e239f4f38f60bdb5aad028b3b9f0019d5b1983159e834d3e6c",
+      "canonical_git_lf_sha256": "43afe601066c16e239f4f38f60bdb5aad028b3b9f0019d5b1983159e834d3e6c",
+      "raw_bytes": 18607,
+      "canonical_bytes": 18607,
+      "crlf_pairs": 0,
+      "canonical_lf_positions_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30u_biu.sv": {
+      "tested_windows_raw_sha256": "491d3500372523c7f6755957fc0aa2c4de0a22225b9703ba72ceb8a71d03da9b",
+      "canonical_git_lf_sha256": "2b2efee0a91c40dc5df9c30c4862bc9fdf4b91646530c3e4d6f1f2d7dd5cf088",
+      "raw_bytes": 164284,
+      "canonical_bytes": 161276,
+      "crlf_pairs": 3008,
+      "canonical_lf_positions_sha256": "7d00ac231cb764ec0d2a218906a4ebc611ff557f618081cca66a7110af6ef528",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30u_eu.sv": {
+      "tested_windows_raw_sha256": "9bb0e5de661136b3558c04a3ee65c1b8dcf702a9efe7e5e4fdd81cbaf058aaa0",
+      "canonical_git_lf_sha256": "2c4117423a8b8c6b470658c06217b2b51e3fbb2984277046d2014a7cb16178d9",
+      "raw_bytes": 223210,
+      "canonical_bytes": 219037,
+      "crlf_pairs": 4173,
+      "canonical_lf_positions_sha256": "4c45c399ea69f309fe233c9c231a8fbe61a310a4979fa6b7a06622215405629b",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30u_eu_step.svh": {
+      "tested_windows_raw_sha256": "ae1fe3b4e3f9706e5f7743e82b2fb839be4691dcc0f086e3604236ef2b747e98",
+      "canonical_git_lf_sha256": "723880d9d2027923aff4c02520d045e638de7d14f10143017ce4eb2b273a57ae",
+      "raw_bytes": 46281,
+      "canonical_bytes": 45329,
+      "crlf_pairs": 952,
+      "canonical_lf_positions_sha256": "a4939f22815d0ed2616be5cf28be8904cf87281393f09b540842b4f259bd62cf",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30u_eu_wd1.svh": {
+      "tested_windows_raw_sha256": "e36054d5ccb308ac4144288ab162f17cad66457861587a4c0ec4f6777dae77e9",
+      "canonical_git_lf_sha256": "dd04289c1e3e1f346b52d65db37fc5eecdc3dbaa525af5a7b996875f265f6528",
+      "raw_bytes": 3955,
+      "canonical_bytes": 3888,
+      "crlf_pairs": 67,
+      "canonical_lf_positions_sha256": "df29192eebd9bf6305cb6b2cef6b91abe0bb9774f514c55a0391b5d15fa87957",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30u_ss_pkg.sv": {
+      "tested_windows_raw_sha256": "cec84b0d4d752ad747b15f5fc5ad25ec5a044a38c21a82286cab1b047e914209",
+      "canonical_git_lf_sha256": "3e7dc2e03de9e841861606c75b3b48dbaaf044b61beb7e846e631c3f627ab71c",
+      "raw_bytes": 49774,
+      "canonical_bytes": 48942,
+      "crlf_pairs": 832,
+      "canonical_lf_positions_sha256": "ae21dec0e709067ad6287a9b67a8c4b66c797f8bee8c9209114cd8c9204c492e",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30u_staged_lock_pkg.svh": {
+      "tested_windows_raw_sha256": "4313c2355327d9d95a55f617d195fb80e12ffea8e9a345ef41bde698f50bfa0a",
+      "canonical_git_lf_sha256": "4313c2355327d9d95a55f617d195fb80e12ffea8e9a345ef41bde698f50bfa0a",
+      "raw_bytes": 1051,
+      "canonical_bytes": 1051,
+      "crlf_pairs": 0,
+      "canonical_lf_positions_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30u_staged_lock_unit.svh": {
+      "tested_windows_raw_sha256": "54e5f8b7adf1bf57fb3ccbc821e09562b515022bdf97ac4a3040023f1c9333d0",
+      "canonical_git_lf_sha256": "54e5f8b7adf1bf57fb3ccbc821e09562b515022bdf97ac4a3040023f1c9333d0",
+      "raw_bytes": 3336,
+      "canonical_bytes": 3336,
+      "crlf_pairs": 0,
+      "canonical_lf_positions_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "inverse_verified_raw_exact": true
+    },
+    "hdl/rtl/ucore/v30_core.sv": {
+      "tested_windows_raw_sha256": "92b081f857a376494c8cbd7275d1fac9bba0ae99db16d8a6b41fc820a5689c2c",
+      "canonical_git_lf_sha256": "97b0c0ba80b79e1f17283bf56d82a84b83c1c18a13a9c5e738fdaf1da72a4e3b",
+      "raw_bytes": 23898,
+      "canonical_bytes": 23351,
+      "crlf_pairs": 547,
+      "canonical_lf_positions_sha256": "e7bd71dfb742a746933d431efe142b81b436a66c5e680979a269a45de2358238",
+      "inverse_verified_raw_exact": true
+    }
+  },
+  "transformation": "Canonical Git bytes = tested Windows working bytes with every CRLF replaced by LF. No other byte changes. Applies only to these eighteen explicitly hashed text files.",
+  "inverse": "Insert CR before LF at the recorded canonical-byte positions, processed in descending order. The private preparation receipt retains exact positions and proves reconstructed raw SHA matches each tested Windows original. Position-map hashes use compact JSON arrays.",
+  "policy": "ROOT may use Git core.autocrlf=true normalization to publish a reviewable diff. This metadata does not change the tested working tree or authorize staging/commit itself.",
+  "scope": "No code, pins, constraints, source algorithm or qualification changes. Original integrated M3 FAIL, whole-design 20ns FAIL and native NOT_ESTABLISHED remain. Canonical Git derivative was not rebuilt or retested. SILICON MATCH remains the correctness bar."
+}

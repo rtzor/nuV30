@@ -1,0 +1,212 @@
+{
+  "schema": "staged-lock-origin-observer-results-v1",
+  "date": "2026-10-11",
+  "status": "OBSERVED_SIMULATION_ONLY; FULL_STAGED_LOCK_PRODUCER_UNRESOLVED",
+  "public_source_base": "ed50fb4e5222fb5567c01ff16d34cd8a08f584e2",
+  "testbench": {
+    "path": "hdl/tb/tb_boundary_origin_observer.sv",
+    "sha256": "40b3074f2ab847ee65aab72427ab6b65b29dd036bb73cb15d88de96186fa3136",
+    "copied_byte_exact": true
+  },
+  "source_sha256": {
+    "hdl/rtl/ucore/v30u_eu.sv": "65194b0df6cccd21f53be20163868c03625e4f835c0f2e16ac34d6b763f2d05d",
+    "hdl/rtl/ucore/v30u_eu_step.svh": "07146a07b2c8310c2f95141ea16ecb85cdf8c154755193a3c0a47f32141a39a9",
+    "hdl/rtl/ucore/v30u_eu_ss_write.svh": "876635297c1715dce83d06519dff58b763824c7a358979733c7908c61528ca1a",
+    "hdl/rtl/ucore/v30u_ss_pkg.sv": "5b1cb371e31cb53a33dcf15ae81d4f7ffb368b3d44131dd2a7a151f4f3ab2f20",
+    "hdl/rtl/ucore/v30u_ucrom.sv": "5b3d325bf715f5e92290dbe7864e476bc0cce2ca056adf280ef12851e8877d39",
+    "hdl/rtl/ucore/ucdecode.hex": "840b72240a8c65d9299e0790fc6bd5e295666b276c3cb1a22601d266be0fbc2a",
+    "hdl/rtl/ucore/ucrom.hex": "52e504b7c0c0c2ebe1a36903132dc7ea8d117d32e3170a5d12a49b5dc16787b7",
+    "hdl/rtl/ucore/v30u_biu.sv": "06bfb4d389b5e580171df208c48b23eed2bd58a65073379b0bc6fdefcee35afc",
+    "hdl/rtl/ucore/v30_core.sv": "5ea66051b591a9285953903ae7c6a044671ebca798f4e1c3e00dc4bdf2c98c1f"
+  },
+  "experiment": {
+    "classification": "Observed digital simulation of an unchanged public EU with a small external origin-token observer. No BIU instance.",
+    "initialization": "Lawful partial direct SS writes through declared ports, followed by SS inactive observation. No force, architectural hierarchical writes, ROM replacement or modified EU.",
+    "clock": "50 MHz digital simulation stimulus (#10 ns toggles); nominal 10 MHz CPU opportunities separated by five SYS intervals in the observed sequence. Not achieved physical performance.",
+    "fixed_opcode": "FA only",
+    "cases": [
+      {
+        "id": "positive1",
+        "mature_count": 1,
+        "queue_lead": 0,
+        "observed_current_state_after_consume": 7,
+        "symbol": "S_1BL_LEAD"
+      },
+      {
+        "id": "positive2",
+        "mature_count": 2,
+        "queue_lead": 1,
+        "observed_current_state_after_consume": 33,
+        "symbol": "S_1BL_CHG"
+      },
+      {
+        "id": "negative",
+        "mature_count": 2,
+        "queue_lead": 1,
+        "expected_rejection": "EXPECTED_STALE_TOKEN_FAIL after TOKEN_SENSITIVE_ANCHOR; sole assertion fatal, abnormal exit"
+      }
+    ],
+    "second_byte": "The two-mature-byte case represents FA then 90; only FA is supplied/consumed by this standalone EU window. Second byte is not exercised. Queue behavior is declared-port stimulus, not an instantiated BIU or captured data.",
+    "dry_control": "Dry EPOP has q_pop offer1, ripe0 and accepted_consume0. An accepted dry CE does not advance or consume.",
+    "pause_control": "Four CE0 samples with ripe1 preserve current EPOP25 and both observer tokens; q_pop is an offer, not consumed until CE.",
+    "accepted_control": "One accepted mature consume closes the original window from state25 to7/33, observed current boundary0. Correct token0, naive persistent token1.",
+    "simulation_end": "Both positives finish at 412 ns, two ns after accepted edge. This does not observe the earliest native +20 ns pin sample."
+  },
+  "observer_law": {
+    "origin_offer": "current st==S_EPOP && retire_ok_n",
+    "accepted_consume": "observe && ce && !ss_we && !srst && q_pop && q_ripe",
+    "record": "Reset/ownedSS clear; otherwise offer sets record, accepted consume or accepted recognition clears correct record. Naive record ignores cancellation. Final st_n is observed oracle only and never drives either record.",
+    "recognition_limit": "accepted_recognition branch is not exercised. Raw bnd_take qualified by CE has not been established as a general recognition-cancellation producer."
+  },
+  "observations": [
+    "Both fixed positive cases satisfy original anchors, dry retention, CE0 retention and accepted consume/cancel.",
+    "The fixed negative has original-sensitive correct0/naive1 anchor, then the sole expected stale-token assertion. This is an instrument sensitivity control, not a failing CPU implementation."
+  ],
+  "inference": "An EPOP current-state offer cannot simply be retained as an unqualified persistent request: accepted consumption needs cancellation. The experiment provides one source-local cancellation component, not a complete boundary request producer.",
+  "unresolved": [
+    "ROW/TAIL/OPC/ENTRY request birth and selected context completeness",
+    "POSTE/owed-IEND and successor ordering beyond this window",
+    "Late READY/flags/resource selection and cancellation",
+    "First H-active/A-inactive native publication deadline",
+    "Portable CE/HALF scheduling and SS restore epochs"
+  ],
+  "semantic_limits": [
+    "Public v30_core.sv:510 drives BUSLOCK_N constant HIGH. No native LOCK pin/hold oracle is instantiated.",
+    "No native chip, board, hardware capture, held-out data, Fmax, Quartus, fitter or STA measurement.",
+    "No production RTL, QSF, SDC or PLL edits.",
+    "No claim that the full staged architecture is implemented or that five-slot publication preserves native waveform."
+  ],
+  "custody": {
+    "recipe_sha256": "73a663b74c9b3d10d4106606576936323bc27277b7e567ce79c7b0b67c430efb",
+    "prereg_sha256": "34665fec17e048d69f9ddb6ec83196d85ecd3afec7501a8279ad75a7d27254e5",
+    "preparation_seal_sha256": "39d8bb8084af1d3a716543c0896bd6f17a7f86e831591faeb32ba7a9860b17c6",
+    "lint_receipt_sha256": "1248c6dbce450ec743c2803000614c8eb74e05f3b88a976f7390eb4bd6c7235e",
+    "build_receipt_sha256": "08d66ecc1c641ee805dac71de76acf630412cdfda37295a805125c6e3f187d09",
+    "compiled_review_sha256": "8aaffc4ee7f7483681b76b554a4dab9a05494ce59081b8027ca1f0be738a400e",
+    "binary_sha256": "f96aa29d305a4c9421cf1dfb316adbe9851a923e4503fa8bc68678c022da0518",
+    "runtime_receipts": {
+      "positive1": {
+        "sha256": "1c2b5bab17c67daffdfbfa8d9ad384668655f3523d3501bd8d029f5f81b33428",
+        "returncode": 0,
+        "passed_registered_criterion": true,
+        "binary_sha256": "f96aa29d305a4c9421cf1dfb316adbe9851a923e4503fa8bc68678c022da0518"
+      },
+      "positive2": {
+        "sha256": "21fb7ed0efc31e414a58d8ee4cf7ce4a330a99055017b231f7b651652149bcb9",
+        "returncode": 0,
+        "passed_registered_criterion": true,
+        "binary_sha256": "f96aa29d305a4c9421cf1dfb316adbe9851a923e4503fa8bc68678c022da0518"
+      },
+      "negative": {
+        "sha256": "1c802d012c4e49bad0a83349dfc79dc84e468831c7ff7feb61aa32dd5671349c",
+        "returncode": 1,
+        "passed_registered_criterion": true,
+        "binary_sha256": "f96aa29d305a4c9421cf1dfb316adbe9851a923e4503fa8bc68678c022da0518"
+      }
+    },
+    "runtime_logs": {
+      "positive1": {
+        "published_path": "docs/notes/staged_lock_origin_observer_2026-10-11/positive1.log",
+        "original_sha256": "71ab80fd1153f7e30af418e97ed9848a5232618ceb5f17cc0cb3ea6315c30dd8",
+        "published_sha256": "a24e3c7a36c752a48e2de16863c0c34cf097e71f4c9dcd737044f9d974db1c68",
+        "transform": "Replace only exact local testbench filename path in Verilator finish/error lines with hdl/tb/tb_boundary_origin_observer.sv. Preserve all remaining bytes, SYS and anchor rows."
+      },
+      "positive2": {
+        "published_path": "docs/notes/staged_lock_origin_observer_2026-10-11/positive2.log",
+        "original_sha256": "064942cfc12652a2692f793d5157c32895310f94da76586cbfd4ab33e9263180",
+        "published_sha256": "2eb649688b4ad22aa080915f087a736a66b47cb5193b70603d3b64c66ad2fc4b",
+        "transform": "Replace only exact local testbench filename path in Verilator finish/error lines with hdl/tb/tb_boundary_origin_observer.sv. Preserve all remaining bytes, SYS and anchor rows."
+      },
+      "negative": {
+        "published_path": "docs/notes/staged_lock_origin_observer_2026-10-11/negative.log",
+        "original_sha256": "b506caa65ffe37337814b46cbc82e62405db12a69e5e3137d6d8ea6709c5b93a",
+        "published_sha256": "c05d3f1b8ec733709a8558010d0122e2cfb20e0cfb91c989f7df63cd8e96f538",
+        "transform": "Replace only exact local testbench filename path in Verilator finish/error lines with hdl/tb/tb_boundary_origin_observer.sv. Preserve all remaining bytes, SYS and anchor rows."
+      }
+    },
+    "receipt_policy": "Private receipts and binary are identified by SHA only; not copied into the public tree. Published logs are explicitly sanitized derivatives, not byte-exact copies of original logs.",
+    "runtime_critical_review_sha256": "4e7597f63d10785ba711abd72d2c1a177c4d1a125227db92bb20c0a783b36317"
+  },
+  "instrument_history": [
+    {
+      "version": "v1",
+      "status": "Never executed",
+      "issue": "Unresolved direct-native build environment and no explicit token/dry discriminator."
+    },
+    {
+      "version": "v2",
+      "status": "Never executed",
+      "issue": "One mature byte paired with lead1 did not specify a remaining mature byte."
+    },
+    {
+      "version": "v3",
+      "status": "Never executed",
+      "issue": "Dry q_pop was incorrectly asserted0; offer is independent of ripe. Transcript accepted field lacked ripe qualification."
+    },
+    {
+      "version": "v4",
+      "status": "Executed as registered after source review",
+      "issue": "Corrected offer/consumption distinction; source unchanged."
+    },
+    {
+      "version": "critic static compiled reader",
+      "status": "Static reader assumptions corrected; no build or DUT mutation",
+      "issue": "Parser/output expectation assumptions failed during independent compiled review. Corrected readers examined the same retained compiled artifacts; these were instrument failures, not scored DUT reruns or candidate source failures."
+    },
+    {
+      "version": "root authorization preflight",
+      "status": "Stopped before subprocess; empty attempt directory retained",
+      "issue": "An unresolved Path containing a dot produced a bad critical-review path; a subsequent attempt lacked compiled-approval input. Root corrected the absolute authorization path and approval binding, then used the same binary. No subprocess or DUT execution occurred in the failed preflight attempts."
+    }
+  ],
+  "reproduction": {
+    "status": "Illustrative Linux-style commands, not Linux-tested. Actual execution used Windows MSYS bash, clang and Verilator 5.050; full diagnostics retained.",
+    "build_argv": [
+      "verilator",
+      "--binary",
+      "--timing",
+      "--assert",
+      "--compiler",
+      "clang",
+      "-Wall",
+      "-Wno-fatal",
+      "--top-module",
+      "tb_boundary_origin_observer",
+      "-Ihdl/rtl/ucore",
+      "--Mdir",
+      "work/observer-obj",
+      "-o",
+      "observer",
+      "-CFLAGS",
+      "-std=c++20",
+      "-MAKEFLAGS",
+      "CXX=clang++ LINK='env -u LINK clang++' CFG_LDLIBS_THREADS=-pthread OPT_FAST=-O0 OPT_SLOW=-O0",
+      "hdl/rtl/ucore/v30u_ss_pkg.sv",
+      "hdl/rtl/ucore/v30u_ucrom.sv",
+      "hdl/rtl/ucore/v30u_eu.sv",
+      "hdl/tb/tb_boundary_origin_observer.sv"
+    ],
+    "runtime_cwd": "Repository root. The simulation module v30u_ucrom sets HEXDIR=\"hdl/rtl/ucore/\" and reads {HEXDIR,\"ucdecode.hex\"} and {HEXDIR,\"ucrom.hex\"}; the tables are not root-level ROM files. Use the existing public dependencies without replacement.",
+    "run_argv": [
+      [
+        "work/observer-obj/observer",
+        "+count=1"
+      ],
+      [
+        "work/observer-obj/observer",
+        "+count=2"
+      ],
+      [
+        "work/observer-obj/observer",
+        "+count=2",
+        "+negative=1"
+      ]
+    ],
+    "warning_policy": "Wno-fatal retains diagnostics; it does not make arbitrary warnings acceptable. Actual registered baseline diagnostic classes were reviewed: UNUSEDSIGNAL, VARHIDDEN, TIMESCALEMOD, WIDTHEXPAND, BLKSEQ, DECLFILENAME, UNUSEDPARAM, MULTIDRIVEN, PINCONNECTEMPTY, PROCASSINIT. Unlisted warning or new problematic location rejects. Runtime requires compiled assertion/dependency review; expected negative abnormal exit is required, not ordinary success.",
+    "retained_diagnostics": {
+      "lint": 96,
+      "build": 96
+    },
+    "diagnostic_scope": "The actual build retained 96 baseline warnings; this checkpoint does not claim zero warnings. Per-location reviewed diagnostics and instrument errata remain part of its prerequisite closure."
+  }
+}

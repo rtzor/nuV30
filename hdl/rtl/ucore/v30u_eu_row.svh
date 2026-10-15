@@ -56,6 +56,12 @@ begin
     // --- flag write ----------------------------------------------------
     if (!e_is_rloop && e_w && !ext4s_early_wblock && (sig_mask != 16'd0))
         commit_flags(sig_mask, sig_flags);
+    // LAW (NEC application inferred): DAD publishes CY only when its word sum is consumed.
+    if (!e_is_rloop && !e_w && !ext4s_early_wblock &&
+        opc8080_eff && (upc_page == 3'd6) &&
+        (opc_reg_eff[7:6] == 2'b00) && (opc_reg_eff[3:0] == 4'h9) &&
+        (al_op == A_ADD) && !al_width_byte && e_have1 && (e_s1 == 5'd20))
+        commit_flags(16'd1 << FCY, sig_flags);
 
     // --- row type ------------------------------------------------------
     nloc  = upc_loc_n + 4'd1;
@@ -127,8 +133,8 @@ begin
         end else begin
             case (e_ictl)
                 I_MFS:     mode8080_n = 1'b0;
-                I_MFC:     mode8080_n = 1'b1;
-                I_ENDEM:   mode8080_n = 1'b0;
+                I_MFC: begin mode8080_n = 1'b1; md_write_enabled_n = 1'b1; end
+                I_ENDEM: begin mode8080_n = 1'b0; md_write_enabled_n = 1'b0; end
                 I_CITF:    begin psw_n[FIE] = 1'b0; psw_n[FBRK] = 1'b0; end
                 I_CLRCYV:  begin psw_n[FCY] = 1'b0; psw_n[FV] = 1'b0; end
                 I_SETCYV:  begin psw_n[FCY] = 1'b1; psw_n[FV] = 1'b1; end
@@ -137,7 +143,7 @@ begin
                 I_BCDNZ:   if (!stat_n[FZ]) sign_neg_n = 1'b0;
                 default: ;                // SUSP / FLUSH rode this clock
             endcase
-            psw_n = (psw_n & PSW_WRITABLE) | PSW_FORCED;
+            psw_n = psw_with_mode(psw_n, mode8080_n);
         end
         // --- the bus cycle (posted combinationally on this clock) ------
         if (e_ectl == E_INTATAIL) bus_word_n = 1'b1;

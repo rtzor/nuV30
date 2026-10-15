@@ -509,6 +509,9 @@ V30_MUXED_AD_IS_REQUIRED_TO_SYNTHESISE_system_large __bus_shape_guard ();
 
 v30_core u_core
 (
+`ifdef V30_STAGED_LOCK_DIV5
+    .STAGED_PROFILE_OK((cfg_clk_div==6'd5)&&!cfg_small_mode),
+`endif
     .CLK       (clk),
 `ifdef SYNTHESIS
     .CE        (bus_tick_rise),

@@ -56,7 +56,7 @@
         SSA_E_REP_POL:             ss_rdata <= {15'b0, rep_pol};
         SSA_E_BUS_WORD:            ss_rdata <= {15'b0, bus_word};
         SSA_E_OPC8080:             ss_rdata <= {15'b0, opc8080};
-        SSA_E_MODE8080:            ss_rdata <= {15'b0, mode8080};
+        SSA_E_MODE8080:            ss_rdata <= {14'b0, md_write_enabled, mode8080};
         SSA_E_INTR_PEND:           ss_rdata <= {15'b0, intr_pending};
         SSA_E_HALTED:              ss_rdata <= {15'b0, eu_halted};
         SSA_E_M_KIND:              ss_rdata <= {14'b0, m_kind};

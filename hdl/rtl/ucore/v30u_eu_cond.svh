@@ -79,6 +79,15 @@ case (r_cond)
     C_BUSY:   taken = poll_busy;
     C_INTR:   taken = intr_pending_n;
     default:  begin                              // C_OPC -- pla_2
+                  // LAW (NEC application inferred): condition bits select Z/C/P/S and sense.
+                  if (opc8080_n) begin
+                      case (opc_reg_n[5:4])
+                          2'd0: taken = (psw_n[FZ]  == opc_reg_n[3]);
+                          2'd1: taken = (psw_n[FCY] == opc_reg_n[3]);
+                          2'd2: taken = (psw_n[FP]  == opc_reg_n[3]);
+                          default: taken = (psw_n[FS] == opc_reg_n[3]);
+                      endcase
+                  end else begin
                   case (opc_reg_n[3:0])
                       4'h0: taken = psw_n[FV];
                       4'h1: taken = !psw_n[FV];
@@ -97,5 +106,6 @@ case (r_cond)
                       4'hE: taken = psw_n[FZ] || (psw_n[FS] != psw_n[FV]);
                       default: taken = !psw_n[FZ] && (psw_n[FS] == psw_n[FV]);
                   endcase
+                  end
               end
 endcase

@@ -55,6 +55,7 @@ module v30u_ucrom #(
 ) (
     // 13-bit micro-address {page[2:0], opc[7:0], rowgrp[1:0]}
     input      [12:0] dec_addr,
+    input             dec_emu,
     output            dec_valid,
     output      [8:0] dec_bank,
 
@@ -71,10 +72,12 @@ module v30u_ucrom #(
 // [11:10] are constant zero in every entry, so they cost nothing after
 // synthesis, and `dec_w[9:0]` below is the word.
 reg [11:0] ucdecode [0:8191];
+reg [11:0] ucdecode_8080 [0:8191];
 reg [28:0] ucrom    [0:1027];
 
 initial begin
     $readmemh({HEXDIR, "ucdecode.hex"}, ucdecode);
+    $readmemh({HEXDIR, "ucdecode_8080.hex"}, ucdecode_8080);
     $readmemh({HEXDIR, "ucrom.hex"}, ucrom);
 end
 
@@ -120,10 +123,19 @@ initial begin
         $fatal(1, "v30u_ucrom: ucdecode.hex did not load from '%s' -- the decode table is EMPTY (F44)", HEXDIR);
     if (ucdecode[13'h1E43] === 12'd0 || (^ucdecode[13'h1E43]) === 1'bx)
         $fatal(1, "v30u_ucrom: ucdecode.hex is SHORT from '%s' -- the last valid entry (0x1E43) never loaded (F44)", HEXDIR);
+    // Experimental 8080 intake: no native-table fallback. Contents are also
+    // source-hash bound by candidate manifests and future compiler/run recipes.
+    if (ucdecode_8080[13'h0000] === 12'd0 || (^ucdecode_8080[13'h0000]) === 1'bx)
+        $fatal(1, "v30u_ucrom: ucdecode_8080.hex absent/EMPTY from '%s' (F44_8080)", HEXDIR);
+    if (ucdecode_8080[13'h1E43] === 12'd0 || (^ucdecode_8080[13'h1E43]) === 1'bx)
+        $fatal(1, "v30u_ucrom: ucdecode_8080.hex SHORT from '%s' (F44_8080)", HEXDIR);
+    if (ucdecode_8080[13'h1C08] !== 12'h277)
+        $fatal(1, "v30u_ucrom: ucdecode_8080.hex wrong mode-resolution at 1C08 (F44_8080)");
 end
 `endif
 
-wire [9:0] dec_w = ucdecode[dec_addr][9:0];
+wire [9:0] dec_w = dec_emu ? ucdecode_8080[dec_addr][9:0]
+                             : ucdecode[dec_addr][9:0];
 
 assign dec_valid = dec_w[9];
 assign dec_bank  = dec_w[8:0];
