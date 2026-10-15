@@ -56,7 +56,8 @@
             SSA_E_REP_POL:             rep_pol_n = ss_wdata[0];
             SSA_E_BUS_WORD:            bus_word_n = ss_wdata[0];
             SSA_E_OPC8080:             opc8080_n = ss_wdata[0];
-            SSA_E_MODE8080:            mode8080_n = ss_wdata[0];
+            SSA_E_MODE8080: begin mode8080_n = ss_wdata[0];
+                                 md_write_enabled_n = ss_wdata[1]; end
             SSA_E_INTR_PEND:           intr_pending_n = ss_wdata[0];
             SSA_E_HALTED:              eu_halted_n = ss_wdata[0];
             SSA_E_M_KIND:              m_kind_n = ss_wdata[1:0];

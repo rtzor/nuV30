@@ -1,5 +1,12 @@
 # nuV30
 
+The current 8080 extension completes the agreed 244-instruction-form finite
+engineering scope, including functional, native-preservation and scoped mapped
+checks. It has not been validated against NEC silicon or for cycle-by-cycle
+hardware timing. See [Final53 validation](docs/notes/8080_final53_validation.md)
+for the tested populations, save-state format, timing artifact and the exact
+limits of the decoder/eight-row proof.
+
 This is a cycle-accurate FPGA recreation of the **NEC V30 (μPD70116)**, developed and
 verified against real CPU hardware. A custom board connects the V30 to a DE-10 Nano, allowing the FPGA to drive the CPU inputs and read it's output. A test harness executes sequences of operations under various bus conditions and measures the responses. That information is use to infer internal hardware behavior and turn that into HDL code.
 

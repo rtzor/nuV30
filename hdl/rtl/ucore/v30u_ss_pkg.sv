@@ -133,7 +133,7 @@ package v30_ss_pkg;
   // version must move: the stream is the same LENGTH and a different SHAPE,
   // and `ss_lint`'s constant check compares counts.  Same reasoning as the
   // 0x8A -> 0x8B width bump.  No symbol is renumbered.
-  localparam int          SS_VERSION   = 32'h0000008F;   // ucore map v15 (operand-width tags)
+  localparam int          SS_VERSION   = 32'h00000090;   // PRIVATE experimental v16: MODE8080 session bit1
   localparam logic [8:0]  SSA_TAG      = 9'h000;
   localparam logic [8:0]  SS_BIU_BASE  = 9'h001;
   localparam int          SS_BIU_COUNT = 109;  // U4 F49 (+5); s11 (-4); s21 (-1); H3 (+1);
@@ -752,7 +752,7 @@ package v30_ss_pkg;
       SSA_E_REP_POL:             ss_field_width = 1;
       SSA_E_BUS_WORD:            ss_field_width = 1;
       SSA_E_OPC8080:             ss_field_width = 1;
-      SSA_E_MODE8080:            ss_field_width = 1;
+      SSA_E_MODE8080:            ss_field_width = 2;
       SSA_E_INTR_PEND:           ss_field_width = 1;
       SSA_E_HALTED:              ss_field_width = 1;
       SSA_E_M_KIND:              ss_field_width = 2;

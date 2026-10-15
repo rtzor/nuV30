@@ -78,7 +78,8 @@ end
 
 S_DECODE: begin
     // ZERO-COST: the prefix test.
-    pv = pla3_native(ld_b_n);
+    opc8080_n = mode8080_n;
+    pv = pla3_lookup(mode8080_n ? PLA3_MODE_8080 : PLA3_MODE_NATIVE, ld_b_n);
     if (pla3_is_prefix(pv)) begin
         case (pla3_xop(pv))
             PLA3_BL1_SEG_PREFIX: begin
@@ -134,7 +135,8 @@ end
 // loader_impl.h -- the post-prefix-loop decode
 //----------------------------------------------------------------------------
 S_DECODE2: begin
-    pv = ld_ext_n ? pla3_ext(ld_b_n) : pla3_native(ld_b_n);
+    pv = ld_ext_n ? pla3_ext(ld_b_n)
+                  : pla3_lookup(opc8080_n ? PLA3_MODE_8080 : PLA3_MODE_NATIVE, ld_b_n);
     ld_pla_n = pv;
     if (!ld_ext_n && pla3_one_byte_logic(pv)) begin
         // fz2 P2 / `L-B` -- **`HLT` DOES NOT PARK WHEN IT RETIRES INTO THE
@@ -172,7 +174,7 @@ S_DECODE2: begin
             // clear_consumed(): the wake's pop is a fresh instruction's `F`,
             // and the HALT path never reaches `S_INSTR_END` to say so.
             pop_is_first_n = 1'b1;
-            psw_n = (psw_n & PSW_WRITABLE) | PSW_FORCED;
+            psw_n = psw_with_mode(psw_n, mode8080_n);
             st_n = S_HALTED;
         end else begin
             // §35.3 -- THE 1BL EXECUTE STROBE IS THIS EDGE, NOT THE NEXT ONE.
@@ -254,7 +256,7 @@ S_DECODE2: begin
                 : pla3_w_from_bit0(pv) ? (ld_b_n[0] == 1'b0)
                 : 1'b0;
         op8_n  = ld_byte_n;
-        imm8_n = ld_byte_n || (ld_b_n == 8'h83) || (ld_b_n == 8'h6B);
+        imm8_n = ld_byte_n || (!opc8080_n && ((ld_b_n == 8'h83) || (ld_b_n == 8'h6B)));
         xop_n  = pla3_xop(pv);
         // ...and the sreg-MOV class arms the recognition shadow (`8C` / `8E`,
         // load AND store -- both measured).  One boundary, spent by it.
@@ -272,14 +274,15 @@ S_DECODE2: begin
         // 6 of 6 pairs and grace 0 on none, while `PUSH` sreg (`06`/`16`, the
         // ADJACENT entry `00?.000??110.00`) is grace 0 on 5 of 5 and `LES` /
         // `LDS` grace 0 on 11 of 11.
-        if (!ld_ext_n && (pla3_sreg_mov(pv) ||
+        if (!opc8080_n && !ld_ext_n && (pla3_sreg_mov(pv) ||
                           ld_b_n == 8'h07 || ld_b_n == 8'h17 ||
                           ld_b_n == 8'h1F))
             irq_shadow_n = 1'b1;
-        ld_page_n = ld_ext_n ? 3'd4 : ((rep_kind_n != REP_NONE) ? 3'd1 : 3'd0);
+        ld_page_n = opc8080_n ? (ld_ext_n ? 3'd5 : 3'd6)
+                              : (ld_ext_n ? 3'd4 : ((rep_kind_n != REP_NONE) ? 3'd1 : 3'd0));
         opc_reg_n = ld_b_n;
-        ld_hasrm_n = pla3_has_modrm(pv);
-        st_n = pla3_has_modrm(pv) ? S_MODRM : S_NORM_CHG;
+        ld_hasrm_n = !opc8080_n && pla3_has_modrm(pv);
+        st_n = ld_hasrm_n ? S_MODRM : S_NORM_CHG;
         stop = 1'b1;
     end
 end
@@ -428,6 +431,64 @@ S_BIND: begin
     rmreg = ld_rm_n[5:3];
     rmrm  = ld_rm_n[2:0];
     ld_grpd_n = 1'b0;
+    if (opc8080_n) begin
+        opc_from_modrm_n = 1'b0; opc_base_n = 5'd0; modrm_reg_n = 3'd0;
+        rep_test_n = TEST_NONE; rep_pol_n = 1'b0; ld_grpd_n = 1'b0;
+        m_kind_n = OK_NONE; r_kind_n = OK_NONE;
+        m_idx_n = 3'd0; r_idx_n = 3'd0;
+        m_byte_n = ld_byte_n; r_byte_n = ld_byte_n;
+        m_ea_n = gpr_n[R_BW]; r_ea_n = gpr_n[R_BW];
+        m_seg_n = 3'd3; r_seg_n = 3'd3;
+        if (!ld_ext_n) begin
+            if (ld_byte_n && pla3_dir_from_bit1(pv) && !pla3_has_modrm(pv)) begin
+                // Byte immediate destination encoded in bits5:3, including [HL].
+                m_kind_n = (ld_b_n[5:3] == 3'd6) ? OK_MEM : OK_REG;
+                m_idx_n = emu_reg_code(ld_b_n[5:3]);
+                // The byte-immediate ROM transfers to R; M remains the writeback owner.
+                r_kind_n = m_kind_n; r_idx_n = m_idx_n;
+                r_byte_n = m_byte_n; r_ea_n = m_ea_n; r_seg_n = m_seg_n;
+            end else if (ld_byte_n && pla3_has_modrm(pv)) begin
+                // The PLA class denotes encoded operands, not an extra ModRM byte.
+                // MOV ROM transfers M -> TMPA -> R: bind source then destination.
+                if (!pla3_one_byte_logic(pv) && !ld_b_n[7] && ld_b_n[6]) begin
+                    m_kind_n = (ld_b_n[2:0] == 3'd6) ? OK_MEM : OK_REG;
+                    m_idx_n = emu_reg_code(ld_b_n[2:0]);
+                    r_kind_n = (ld_b_n[5:3] == 3'd6) ? OK_MEM : OK_REG;
+                    r_idx_n = emu_reg_code(ld_b_n[5:3]);
+                end else begin
+                    // ROM reads encoded M: INC/DEC bits5:3, accumulator ALU bits2:0.
+                    m_kind_n = ((ld_b_n[7] ? ld_b_n[2:0] : ld_b_n[5:3]) == 3'd6) ? OK_MEM : OK_REG;
+                    m_idx_n = emu_reg_code(ld_b_n[7] ? ld_b_n[2:0] : ld_b_n[5:3]);
+                    if (ld_b_n[7] || ld_b_n[6]) begin
+                        r_kind_n = (ld_b_n[2:0] == 3'd6) ? OK_MEM : OK_REG;
+                        r_idx_n = emu_reg_code(ld_b_n[2:0]);
+                    end else begin
+                        // The byte INC/DEC ROM reads and writes R, the same owner as M.
+                        r_kind_n = m_kind_n; r_idx_n = m_idx_n;
+                    end
+                end
+            end else if (!ld_byte_n) begin
+                m_kind_n = OK_REG; m_idx_n = emu_pair_code(ld_b_n[5:4]);
+                // LAW (NEC application inferred): DAD also reads the encoded pair through R.
+                // Register-pair PUSH/POP uses the same R/M binding; rp=3 remains PSW.
+                if (((ld_b_n[7:6] == 2'b00) &&
+                     ((ld_b_n[3:0] == 4'h1) || (ld_b_n[2:0] == 3'b011) ||
+                      (ld_b_n[3:0] == 4'h9))) ||
+                    ((ld_b_n[7:6] == 2'b11) && !ld_b_n[3] &&
+                     (ld_b_n[1:0] == 2'b01) && (ld_b_n[5:4] != 2'b11))) begin
+                    r_kind_n = m_kind_n; r_idx_n = m_idx_n;
+                    r_byte_n = m_byte_n; r_ea_n = m_ea_n; r_seg_n = m_seg_n;
+                end
+            end else begin
+                m_kind_n = OK_REG; m_idx_n = R_AW;
+                // Encoded accumulator/pair-indirect class 000r?010 reads R as address.
+                if ((ld_b_n[7:5] == 3'b000) && (ld_b_n[2:0] == 3'b010)) begin
+                    r_kind_n = OK_REG; r_idx_n = emu_pair_code(ld_b_n[5:4]);
+                    r_byte_n = 1'b0; r_ea_n = m_ea_n; r_seg_n = m_seg_n;
+                end
+            end
+        end
+    end else begin
     // LEA exposes the address adder's full (post-displacement) result rather
     // than consuming it as a memory address.  That full result is therefore
     // what remains on the stale EA rail for a following register-form POP.
@@ -520,8 +581,15 @@ S_BIND: begin
     end else begin
         m_kind_n = OK_REG; m_idx_n = ld_b_n[2:0]; m_byte_n = ld_byte_n;
     end
-    wb_kind_n = m_kind_n; wb_idx_n = m_idx_n; wb_ea_n = m_ea_n;
-    wb_seg_n = m_seg_n;   wb_byte_n = m_byte_n;
+    end
+    if (opc8080_n && !ld_ext_n && ld_byte_n && pla3_has_modrm(pv) &&
+        !pla3_one_byte_logic(pv) && !ld_b_n[7] && ld_b_n[6]) begin
+        wb_kind_n = r_kind_n; wb_idx_n = r_idx_n; wb_ea_n = r_ea_n;
+        wb_seg_n = r_seg_n;   wb_byte_n = r_byte_n;
+    end else begin
+        wb_kind_n = m_kind_n; wb_idx_n = m_idx_n; wb_ea_n = m_ea_n;
+        wb_seg_n = m_seg_n;   wb_byte_n = m_byte_n;
+    end
 
     ld_preread_n = 1'b0;
     if (ld_hasrm_n && (rmmod != 2'd3) && !(!ld_ext_n && pla3_modrm_store(pv)))
@@ -535,6 +603,13 @@ S_BIND: begin
             // `has_rm && mod != 3 && !MODRM_STORE`.
             opr_loaded_n = 1'b1;
         end
+
+    // Encoded byte operations consume their M owner; never pre-read write-only R.
+    if (opc8080_n && !ld_ext_n && ld_byte_n && pla3_has_modrm(pv) &&
+        !pla3_one_byte_logic(pv) && (m_kind_n == OK_MEM)) begin
+        ld_preread_n = 1'b1;
+        opr_loaded_n = 1'b1;
+    end
 
     row_posted_n = 1'b0;
     if (ld_preread_n)     st_n = S_PRERD;

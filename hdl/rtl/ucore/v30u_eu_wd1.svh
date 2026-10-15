@@ -15,7 +15,10 @@ case (e_d1)
     5'd12: begin tmpa_n = v1; tmpa_byte_n = wb1; end
     5'd13: begin tmpb_n = v1; tmpb_byte_n = wb1; end
     5'd14: begin tmpc_n = v1; tmpc_byte_n = wb1; end
-    5'd15: psw_n = (v1 & PSW_WRITABLE) | PSW_FORCED;
+    5'd15: begin
+        if (md_write_enabled_n) mode8080_n = !v1[15];
+        psw_n = psw_with_mode(v1, mode8080_n);
+    end
     5'd16: gpr_n[R_AW][15:8] = v1[7:0];               // AH
     5'd17: count_n = v1;
     5'd18: begin                                    // wr_operand(R, v)

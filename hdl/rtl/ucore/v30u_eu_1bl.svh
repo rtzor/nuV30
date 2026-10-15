@@ -26,7 +26,7 @@ if (!(poste_n &&
         PLA3_BL1_NOT_CY:  psw_n[FCY]  = ~psw_n[FCY];
         default: ;
     endcase
-    psw_n = (psw_n & PSW_WRITABLE) | PSW_FORCED;
+    psw_n = psw_with_mode(psw_n, mode8080_n);
 `ifndef SYNTHESIS
     trc_1bl_post = psw_n;
 `endif

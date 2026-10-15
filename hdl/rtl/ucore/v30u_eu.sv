@@ -306,6 +306,7 @@ reg        rep_pol;
 reg        bus_word;
 reg        opc8080;
 reg        mode8080;
+reg        md_write_enabled; // inferred BRKEM..RETEM session, not die-placement proof
 reg        intr_pending;
 reg        eu_halted;
 
@@ -608,6 +609,7 @@ wire [28:0] row;
 
 v30u_ucrom u_ucrom (
     .dec_addr (dec_addr_next),
+    .dec_emu  (opc8080_commit),
     .dec_valid(dec_valid_next),
     .dec_bank (dec_bank_next),
     .rom_addr ({dec_bank, upc_loc[1:0]}),
@@ -1127,8 +1129,12 @@ function automatic [4:0] opc8080_map(input [2:0] s);
         default: opc8080_map = A_CMP;
     endcase
 endfunction
-wire [4:0] alu_opc_sel = opc8080_eff ? opc8080_map(opc_sel)
-                                     : (opc_base + {2'b0, opc_sel});
+// LAW (NEC application inferred): 000rr111 selects the four byte rotations.
+wire emu_rotate_opcode = opc8080_eff && (opc_reg_eff[7:5] == 3'b000) &&
+                         (opc_reg_eff[2:0] == 3'b111);
+wire [4:0] alu_opc_sel = emu_rotate_opcode ? (A_ROL + {3'd0, opc_reg_eff[4:3]})
+                      : opc8080_eff ? opc8080_map(opc_sel)
+                                    : (opc_base + {2'b0, opc_sel});
 
 wire [4:0] eff_op = (al_op == A_OPC) ? alu_opc_sel : al_op;
 // the operation the row NOW standing latches (exec_impl.h's `new_op`)
@@ -1194,7 +1200,11 @@ assign tmps_lat[3] = 16'd0;
 wire al_tag_b = (al_tmp == 2'd0) ? tmpa_byte
               : (al_tmp == 2'd1) ? tmpb_byte
               : (al_tmp == 2'd2) ? tmpc_byte : 1'b0;
-wire al_width_byte = (eff_op == A_ABS) ? op8_eff : (tmpb_byte || al_tag_b);
+// Opcode-selected 8080 accumulator/rotate ALU consumes bytes, including Q immediates.
+// Share this semantic context with its AC taps; pair/EA/stack direct ALU is unchanged.
+wire emu_opcode_alu = opc8080_eff && (al_op == A_OPC);
+wire al_width_byte = (eff_op == A_ABS) ? op8_eff
+                  : (emu_opcode_alu || tmpb_byte || al_tag_b);
 
 // The datapath is 16 bits ALWAYS for the ADD-class ops; `byte` selects only
 // where the flag taps sit (ledger, "ALU width").
@@ -1214,7 +1224,12 @@ wire adj_lo  = (adj_al[3:0] > 4'd9) || psw[FAC];
 wire adj_hi  = (al_adjust == 2'd1) &&
                (((adj_al[7:4] > 4'd9) || psw[FCY]) ||
                 ((adj_al[7:4] == 4'd9) && (adj_al[3:0] > 4'd9) && !psw[FAC]));
-wire [7:0] adj_corr = (adj_lo ? 8'h06 : 8'h00) + (adj_hi ? 8'h60 : 8'h00);
+// LAW (NEC application inferred): decimal addition uses actual low-nibble carry.
+wire emu_daa = opc8080_eff && (al_adjust == 2'd1) && (eff_op == A_ADD);
+wire [4:0] emu_daa_low = {1'b0, adj_al[3:0]} + (adj_lo ? 5'd6 : 5'd0);
+wire adj_hi_effective = emu_daa ? ((adj_al > 8'h99) || psw[FCY]) : adj_hi;
+wire adj_ac_effective = emu_daa ? emu_daa_low[4] : adj_lo;
+wire [7:0] adj_corr = (adj_lo ? 8'h06 : 8'h00) + (adj_hi_effective ? 8'h60 : 8'h00);
 wire adj_sub = (eff_op == A_SUB);
 wire [8:0] adj_sum = adj_sub ? ({1'b0, adj_al} - {1'b0, adj_corr})
                              : ({1'b0, adj_al} + {1'b0, adj_corr});
@@ -1224,8 +1239,8 @@ wire [7:0] adj_bhi = port_b[15:8];
 wire [7:0] adj_rhi = adj_sub ? (adj_ahi - adj_bhi - {7'd0, adj_sum[8]})
                              : (adj_ahi + adj_bhi + {7'd0, adj_sum[8]});
 wire [15:0] adj_flags = szp({9'd0, adj_sum[7:0]}, 1'b1)
-                      | (16'd1 << FCY) & {16{(al_adjust == 2'd2) ? adj_lo : adj_hi}}
-                      | (16'd1 << FAC) & {16{adj_lo}}
+                      | (16'd1 << FCY) & {16{(al_adjust == 2'd2) ? adj_lo : adj_hi_effective}}
+                      | (16'd1 << FAC) & {16{adj_ac_effective}}
                       | (16'd1 << FV) & {16{adj_sub
                           ? (((adj_al ^ adj_corr) & (adj_al ^ adj_sum[7:0])) & 8'h80) != 8'h00
                           : ((~(adj_al ^ adj_corr) & (adj_al ^ adj_sum[7:0])) & 8'h80) != 8'h00}};
@@ -1279,13 +1294,14 @@ always @* begin
             ar_m = sub_m; ev_val = sub_f; ev_mask = ARITH_MASK;
             ev_flags = szp({1'b0, sub_m[15:0]}, ev_byte);
             ev_flags[FCY] = sub_cy;
-            ev_flags[FAC] = sub_ac;
+            ev_flags[FAC] = emu_opcode_alu ? !sub_ac : sub_ac;
             ev_flags[FV]  = sub_ov;
             if (eff_op == A_CMP) ev_commits = 1'b0;
         end
         A_AND: begin
             ev_val = port_a & port_b; ev_mask = ARITH_MASK;
             ev_flags = szp({1'b0, a_m & b_m}, ev_byte);
+            ev_flags[FAC] = emu_opcode_alu && (a_m[3] || b_m[3]);
         end
         A_OR: begin
             ev_val = port_a | port_b; ev_mask = ARITH_MASK;
@@ -1306,7 +1322,7 @@ always @* begin
             ev_val = port_b - 16'd1;
             ev_mask = (16'd1<<FP)|(16'd1<<FAC)|(16'd1<<FZ)|(16'd1<<FS)|(16'd1<<FV);
             ev_flags = szp({1'b0, dec_m}, ev_byte);
-            ev_flags[FAC] = dec_ac;
+            ev_flags[FAC] = (opc8080_eff && ev_byte) ? !dec_ac : dec_ac;
             ev_flags[FV]  = dec_ov;
         end
         A_INC2: begin ev_val = port_b + 16'd2; ev_mask = 16'd0; end
@@ -1483,7 +1499,26 @@ wire        sig_byte    = al_width_byte;
 //============================================================================
 // SOURCE / DESTINATION MUXES
 //============================================================================
-wire [15:0] flags_rd = (psw & PSW_WRITABLE) | PSW_FORCED;
+function automatic [15:0] psw_with_mode(input [15:0] image, input emu);
+    psw_with_mode = (image & PSW_WRITABLE) | 16'h7002 |
+                    (emu ? 16'h0000 : 16'h8000);
+endfunction
+// Architectural byte-register mapping: B,C,D,E,H,L,M,A -> CH,CL,DH,DL,BH,BL,[HL],AL.
+function automatic [2:0] emu_reg_code(input [2:0] code);
+    case (code)
+        3'd0: emu_reg_code=3'd5; 3'd1: emu_reg_code=3'd1;
+        3'd2: emu_reg_code=3'd6; 3'd3: emu_reg_code=3'd2;
+        3'd4: emu_reg_code=3'd7; 3'd5: emu_reg_code=3'd3;
+        default: emu_reg_code=3'd0; // M is selected by kind, A is AL.
+    endcase
+endfunction
+function automatic [2:0] emu_pair_code(input [1:0] code);
+    case (code)
+        2'd0: emu_pair_code=R_CW; 2'd1: emu_pair_code=R_DW;
+        2'd2: emu_pair_code=R_BW; default: emu_pair_code=R_BP;
+    endcase
+endfunction
+wire [15:0] flags_rd = psw_with_mode(psw, mode8080);
 
 // state.h::rb16 -- the byte-register read is 16 bits wide
 function automatic [15:0] rb16(input [2:0] code, input [15:0] pair);
@@ -1961,7 +1996,8 @@ wire row_blocked = (st == S_ROW) && e_f && f_wait;
 wire        rd_edge_take_raw  = eu_rd_edge && (st == S_ROW) && e_f &&
                                 (e_s1 == 5'd6) && (e_d1 == 5'd15);
 wire        rd_edge_psw_take  = rd_edge_take_raw && row_blocked;
-wire [15:0] rd_edge_psw       = (eu_rd_edge_d & PSW_WRITABLE) | PSW_FORCED;
+wire [15:0] rd_edge_psw = psw_with_mode(eu_rd_edge_d,
+                                 md_write_enabled ? !eu_rd_edge_d[15] : 1'b0);
 
 // The row's own queue demand
 wire q_demand_row = row_need_q && !row_blocked;
@@ -2561,7 +2597,7 @@ wire qb_is_halt = pla3_one_byte_logic(pla3_lookup(
 // there (the `1BLD` probe reads `seen=1` on that clock).
 // *Falsifier*: a capture in which the chip drives a HALT cycle at a `HLT`
 // whose own retire boundary has the BRK/TF arm standing.
-assign eu_halt = q_pop && q_ripe && q_first && qb_is_halt && !mode8080 &&
+assign eu_halt = q_pop && q_ripe && q_first && qb_is_halt &&
                  !eu_halted && !brk_seen;
 
 // THE WAKE.  A halted part has no instruction boundary to sample, so the
@@ -2709,6 +2745,7 @@ reg            rep_pol_r;
 reg            bus_word_r;
 reg            opc8080_r;
 reg            mode8080_r;
+reg            md_write_enabled_r;
 reg            intr_pending_r;
 reg            eu_halted_r;
 reg      [3:0] int_p_r;
@@ -2846,6 +2883,7 @@ always @* begin
     bus_word_r = bus_word;
     opc8080_r = opc8080;
     mode8080_r = mode8080;
+    md_write_enabled_r = md_write_enabled;
     intr_pending_r = intr_pending;
     eu_halted_r = eu_halted;
     int_p_r = int_p;
@@ -2955,6 +2993,7 @@ always @* begin
         lock_pfx_r = 1'b0; opc_reg_r = 8'd0; op8_r = 1'b0; imm8_r = 1'b0;
         opc_base_r = 5'd0; opc_from_modrm_r = 1'b0; modrm_reg_r = 3'd0; xop_r = 4'd0;
         rep_test_r = TEST_NONE; rep_pol_r = 1'b0; bus_word_r = 1'b0;
+        md_write_enabled_r = 1'b0;
         opc8080_r = 1'b0; mode8080_r = 1'b0; intr_pending_r = 1'b0; eu_halted_r = 1'b0;
         rep_chain_r = 1'b0;
         m_kind_r = OK_NONE; m_idx_r = 3'd0; m_ea_r = 16'd0; m_seg_r = 3'd3; m_byte_r = 1'b0;
@@ -3105,6 +3144,7 @@ reg            rep_pol_n;
 reg            bus_word_n;
 reg            opc8080_n;
 reg            mode8080_n;
+reg            md_write_enabled_n;
 reg            intr_pending_n;
 reg            eu_halted_n;
 reg      [3:0] int_p_n;
@@ -3315,13 +3355,13 @@ reg  [2:0] ti, ts;
 reg [15:0] te;
 reg        tb;
 
-`define SETPSW(v) begin psw_n = ((v) & PSW_WRITABLE) | PSW_FORCED; end
+`define SETPSW(v) begin if (md_write_enabled_n) mode8080_n = (((v) & 16'h8000) == 16'h0000); psw_n = psw_with_mode((v), mode8080_n); end
 
 // commit_flags
 task automatic commit_flags(input [15:0] mask, input [15:0] fl);
     begin
         psw_n = ((psw_n & ~mask) | (fl & mask));
-        psw_n = (psw_n & PSW_WRITABLE) | PSW_FORCED;
+        psw_n = psw_with_mode(psw_n, mode8080_n);
     end
 endtask
 
@@ -3383,6 +3423,7 @@ always @* begin
     bus_word_n = bus_word;
     opc8080_n = opc8080;
     mode8080_n = mode8080;
+    md_write_enabled_n = md_write_enabled;
     intr_pending_n = intr_pending;
     eu_halted_n = eu_halted;
     int_p_n = int_p;
@@ -3851,6 +3892,14 @@ end
 // select on the SAME condition (`srst && !ss_we`) and from the SAME pair of
 // sources (`upc_*_r`, `upc_*_n`).  If a future edit gives `upc_opc` a third arm
 // -- as `psw` has for the read's data edge -- this line must gain it too.
+// Decode namespace follows the active microsequence, with the same commit
+// priority as UPC/opc8080. S_IRQ_D forces a native sequence while MD still
+// belongs to the interrupted frame; pe_opc8080 is the old post-E opcode.
+// Interpreting the two PLA tables this way is inferred, not silicon proof.
+wire opc8080_commit = (srst && !ss_we) ? opc8080_r : opc8080_n;
+wire mode8080_commit = (srst && !ss_we) ? mode8080_r
+                       : (rd_edge_psw_take && !ss_we && md_write_enabled)
+                           ? !eu_rd_edge_d[15] : mode8080_n;
 assign dec_addr_next = (srst && !ss_we)
         ? {upc_page_r, upc_opc_r, upc_loc_r[3:2]}
         : {upc_page_n, upc_opc_n, upc_loc_n[3:2]};
@@ -3925,7 +3974,8 @@ always @(posedge clk) begin
         rep_pol <= (srst && !ss_we) ? rep_pol_r : rep_pol_n;
         bus_word <= (srst && !ss_we) ? bus_word_r : bus_word_n;
         opc8080 <= (srst && !ss_we) ? opc8080_r : opc8080_n;
-        mode8080 <= (srst && !ss_we) ? mode8080_r : mode8080_n;
+        mode8080 <= mode8080_commit;
+        md_write_enabled <= (srst && !ss_we) ? md_write_enabled_r : md_write_enabled_n;
         intr_pending <= (srst && !ss_we) ? intr_pending_r : intr_pending_n;
         eu_halted <= (srst && !ss_we) ? eu_halted_r : eu_halted_n;
         int_p <= (srst && !ss_we) ? int_p_r : int_p_n;

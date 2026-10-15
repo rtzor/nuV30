@@ -104,11 +104,16 @@ time — the RTL carries **zero** match/priority logic. See finding **F1** in
 
 `111.00000010.00` (`0x1C08`, the interrupt-acknowledge vector fetch, ucsim
 ledger R4) is matched by two patterns and the 13 dumped bits cannot separate
-them. `ucdecode.hex` carries the **native** resolution — the SECOND match, bank
-120, rows `01E0..01E3` — byte-identical to `sim/ucrom.h::bank_of(emu=false)`.
-The 8080-emulation alternative (bank 119, rows `01DC..01DF`) is recorded in
-`ucrom_census.json` and deliberately **not** emitted: ucore has no BRKEM path,
-and a second table would be dead silicon.
+them. The current core emits both resolutions: `ucdecode.hex` selects native
+bank 120, rows `01E0..01E3`, and `ucdecode_8080.hex` selects 8080 bank 119,
+rows `01DC..01DF`. BRKEM/RETEM support uses both tables.
+
+The decoder selects the table using the committed active opcode namespace,
+`opc8080_commit`. A forced native interrupt sequence selects the native table
+while preserving the interrupted MD flag in the saved frame. These describe
+the current RTL and its inferred interpretation of the dumps; they do not
+establish how a physical NEC chip selects this ambiguous address. See the
+[finite 8080 validation scope](../../../docs/notes/8080_final53_validation.md).
 
 ## Status
 
