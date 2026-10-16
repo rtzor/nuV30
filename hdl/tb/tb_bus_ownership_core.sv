@@ -19,6 +19,9 @@ module tb_bus_ownership_core;
     wire [2:0] ref_bs;
     wire [1:0] ref_qs;
     wire ref_rd, ref_ube, ref_lock;
+    wire [15:0] unused_ref_ss_rdata;
+    wire unused_ref_ss_err, unused_ref_ss_bus_quiet;
+    wire [1:0] unused_dbg_first_pop, unused_dbg_pend;
     v30_bus_ownership arb (.*);
     v30_core dut (
         .CLK(CLK), .CE(CORE_CE), .RESET(RESET), .READY(READY),
@@ -30,7 +33,7 @@ module tb_bus_ownership_core;
         .SS_RDATA(SS_RDATA), .SS_ERR(SS_ERR), .SS_BUS_QUIET(CORE_QUIET),
         .bkd_load(1'b0), .bkd_regs('0), .bkd_queue('0), .bkd_qlen('0),
         .bkd_fetch_ip('0), .scr_en(1'b0), .scr_qop('0),
-        .dbg_regs(dbg_regs), .dbg_first_pop(), .dbg_pend()
+        .dbg_regs(dbg_regs), .dbg_first_pop(unused_dbg_first_pop[0]), .dbg_pend(unused_dbg_pend[0])
     );
     v30_core reference_core (
         .CLK(CLK), .CE(CE), .RESET(RESET), .READY(READY),
@@ -39,10 +42,10 @@ module tb_bus_ownership_core;
         .ADDR_O(ref_addr), .DATA_O(ref_data), .STATUS_O(ref_status),
         .QS(ref_qs), .BS(ref_bs), .RD_N(ref_rd), .UBE_N(ref_ube), .BUSLOCK_N(ref_lock),
         .SS_ADDR('0), .SS_WDATA('0), .SS_WE(1'b0),
-        .SS_RDATA(), .SS_ERR(), .SS_BUS_QUIET(),
+        .SS_RDATA(unused_ref_ss_rdata), .SS_ERR(unused_ref_ss_err), .SS_BUS_QUIET(unused_ref_ss_bus_quiet),
         .bkd_load(1'b0), .bkd_regs('0), .bkd_queue('0), .bkd_qlen('0),
         .bkd_fetch_ip('0), .scr_en(1'b0), .scr_qop('0),
-        .dbg_regs(ref_regs), .dbg_first_pop(), .dbg_pend()
+        .dbg_regs(ref_regs), .dbg_first_pop(unused_dbg_first_pop[1]), .dbg_pend(unused_dbg_pend[1])
     );
     // Public instruction bytes, no firmware: DIV CX gives prefetch time to fill.
     // MOV AX,1; MOV CX,1; XOR DX,DX; DIV CX; JMP back to XOR.

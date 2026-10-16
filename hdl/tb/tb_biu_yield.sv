@@ -52,6 +52,8 @@ module tb_biu_yield;
         .CORE_BUS_ENABLE(bus_enable)
     );
     for (genvar g = 0; g < 2; g++) begin : cores
+        wire [15:0] unused_ss_rdata;
+        wire unused_ss_err, unused_dbg_first_pop, unused_dbg_pend;
         v30_core cpu (
             .CLK(clk), .CE(enables[g]), .RESET(reset), .READY(ready[g]),
             .INT(pin_int), .NMI(pin_nmi), .POLL_N(1'b1),
@@ -61,12 +63,12 @@ module tb_biu_yield;
             .BUS_EXCLUDE(exclude[g]),
             .YIELD_PENDING(g==0 && |request), .BUS_OWNED(g==0 && !bus_enable),
             .YIELD_READY(yield_ready[g]), .SS_ADDR('0), .SS_WDATA('0),
-            .SS_WE(1'b0), .SS_RDATA(), .SS_ERR(), .SS_BUS_QUIET(quiet[g]),
+            .SS_WE(1'b0), .SS_RDATA(unused_ss_rdata), .SS_ERR(unused_ss_err), .SS_BUS_QUIET(quiet[g]),
             .bkd_load(bkd_load), .bkd_regs(bkd_regs),
             .bkd_queue(case_id==9 ? 48'h020006fff090 : case_id==11 ? 48'hf4f402eb9090 : case_id==12 ? 48'h909090f49090 : case_id>=14 && case_id<=15 ? 48'h909090909050 : 48'h909090909090),
             .bkd_qlen((case_id>=9 && case_id<=12 || case_id>=14 && case_id<=15) ? 3'd6 : 3'd0),
             .bkd_fetch_ip((case_id>=9 && case_id<=12 || case_id>=14 && case_id<=15) ? 16'd6 : 16'd0), .scr_en(1'b0),
-            .scr_qop('0), .dbg_regs(regs[g]), .dbg_first_pop(), .dbg_pend()
+            .scr_qop('0), .dbg_regs(regs[g]), .dbg_first_pop(unused_dbg_first_pop), .dbg_pend(unused_dbg_pend)
         );
         assign actual_phase[g] = cpu.u_biu.r_ts;
         assign actual_page[g] = cpu.u_eu.upc_page;
@@ -86,6 +88,31 @@ module tb_biu_yield;
     wire [2:0] u_bs;
     wire [19:0] u_addr;
     wire [15:0] u_rdata;
+    wire [15:0] unused_unit_data_o;
+    wire [3:0] unused_unit_status_o;
+    wire unused_unit_ube_n;
+    wire unused_unit_rd_n;
+    wire [1:0] unused_unit_qs;
+    wire [7:0] unused_unit_q_byte;
+    wire unused_unit_q_ripe;
+    wire unused_unit_q_ripe_lead_n;
+    wire [3:0] unused_unit_q_cnt_o;
+    wire unused_unit_eu_slot_busy;
+    wire unused_unit_eu_slot_busy_n;
+    wire unused_unit_eu_access_active;
+    wire unused_unit_eu_direct_fetch;
+    wire unused_unit_eu_fetch_tail;
+    wire unused_unit_eu_ghost_full;
+    wire unused_unit_eu_ghost_idle;
+    wire unused_unit_eu_ghost_stack_first;
+    wire unused_unit_eu_rd_edge;
+    wire [15:0] unused_unit_eu_rd_edge_d;
+    wire unused_unit_eu_wr_done_n;
+    wire unused_unit_eu_wr_eval;
+    wire unused_unit_eu_opr_free;
+    wire unused_unit_halted_o;
+    wire [15:0] unused_unit_ss_rdata;
+    wire unused_unit_ss_bus_quiet;
     v30u_biu unit_biu (
         .clk(clk),
         .ce(u_ce),
@@ -96,21 +123,21 @@ module tb_biu_yield;
         .yield_ready(u_ready),
         .bs(u_bs),
         .addr_o(u_addr),
-        .data_o(),
-        .status_o(),
-        .ube_n(),
-        .rd_n(),
-        .qs(),
+        .data_o(unused_unit_data_o),
+        .status_o(unused_unit_status_o),
+        .ube_n(unused_unit_ube_n),
+        .rd_n(unused_unit_rd_n),
+        .qs(unused_unit_qs),
         .ad_i(u_kind==0 ? 16'h0020 : u_addr[15:0]==16'h0080 ? 16'h0100 :
               u_addr[15:0]==16'h0201 ? 16'h01a5 :
               (u_addr[15:0]==16'h0200 || u_addr[15:0]==16'h0202) ? 16'h5a00 : 16'h9090),
         .ready(1'b1),
         .psw_ie('0),
         .md8080(u_mode),
-        .q_byte(),
-        .q_ripe(),
-        .q_ripe_lead_n(),
-        .q_cnt_o(),
+        .q_byte(unused_unit_q_byte),
+        .q_ripe(unused_unit_q_ripe),
+        .q_ripe_lead_n(unused_unit_q_ripe_lead_n),
+        .q_cnt_o(unused_unit_q_cnt_o),
         .q_pop('0),
         .q_first('0),
         .q_flush('0),
@@ -135,14 +162,14 @@ module tb_biu_yield;
         .eu_seg('0),
         .eu_seg2('0),
         .eu_word(1'b1),
-        .eu_slot_busy(),
-        .eu_slot_busy_n(),
-        .eu_access_active(),
-        .eu_direct_fetch(),
-        .eu_fetch_tail(),
-        .eu_ghost_full(),
-        .eu_ghost_idle(),
-        .eu_ghost_stack_first(),
+        .eu_slot_busy(unused_unit_eu_slot_busy),
+        .eu_slot_busy_n(unused_unit_eu_slot_busy_n),
+        .eu_access_active(unused_unit_eu_access_active),
+        .eu_direct_fetch(unused_unit_eu_direct_fetch),
+        .eu_fetch_tail(unused_unit_eu_fetch_tail),
+        .eu_ghost_full(unused_unit_eu_ghost_full),
+        .eu_ghost_idle(unused_unit_eu_ghost_idle),
+        .eu_ghost_stack_first(unused_unit_eu_ghost_stack_first),
         .eu_ghost_row('0),
         .eu_ghost_acc('0),
         .eu_ghost_sp('0),
@@ -152,17 +179,17 @@ module tb_biu_yield;
         .eu_wdata('0),
         .eu_rdata_n(u_rdata),
         .eu_rd_done_n(u_rd_done),
-        .eu_rd_edge(),
-        .eu_rd_edge_d(),
-        .eu_wr_done_n(),
-        .eu_wr_eval(),
-        .eu_opr_free(),
+        .eu_rd_edge(unused_unit_eu_rd_edge),
+        .eu_rd_edge_d(unused_unit_eu_rd_edge_d),
+        .eu_wr_done_n(unused_unit_eu_wr_done_n),
+        .eu_wr_eval(unused_unit_eu_wr_eval),
+        .eu_opr_free(unused_unit_eu_opr_free),
         .eu_susp(u_susp),
         .eu_resume('0),
         .eu_halt('0),
         .eu_unhalt('0),
         .eu_unhalt_disp('0),
-        .halted_o(),
+        .halted_o(unused_unit_halted_o),
         .eu_bnd_take('0),
         .eu_bnd_post('0),
         .bkd_load('0),
@@ -173,8 +200,8 @@ module tb_biu_yield;
         .ss_addr('0),
         .ss_wdata('0),
         .ss_we(u_sswe),
-        .ss_rdata(),
-        .ss_bus_quiet()
+        .ss_rdata(unused_unit_ss_rdata),
+        .ss_bus_quiet(unused_unit_ss_bus_quiet)
     );
     task automatic tick;
         logic [1:0] consume_wait;

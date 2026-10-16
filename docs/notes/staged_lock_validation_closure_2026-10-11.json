@@ -1,0 +1,285 @@
+{
+  "schema": "staged-lock-validation-closure-v1",
+  "status": "FINITE_ENGINEERING_CLOSURE_ACCEPTED",
+  "positive": {
+    "cases": 16,
+    "receipt_sha256": "3c015eafde6ca5597005086043460fbbd4aeb2cab8cfe32bf3f87d8ea2279c2a",
+    "root_acceptance_sha256": "31cec1ce8ceaa578e47c5ee9deafe74b6e7c36be183039e5b0fa76a06a0abd9e",
+    "bench_sha256": "874d017907006d2271cafff42cf37404e023118a247948462a00d0da3ae1d305",
+    "literal_sha256": "f69689351477bb4002074bf4e9d149b2171657c084d58bd61991f6e36debffeb",
+    "rows": [
+      {
+        "id": 0,
+        "family": 0,
+        "waits": 0,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=1 rise=0 fall=0 masked=0 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=0 waits=0 writes=1 bytes=2 earlyH=28 differences=3 acquire=1 priority=1 rowwrites=5 tail=0 entry=0 dry=102 deadline=1 inta=0 IFrise=0 IFfall=0 readedge=5 withdraw=0"
+        ]
+      },
+      {
+        "id": 1,
+        "family": 0,
+        "waits": 1,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=1 rise=0 fall=0 masked=0 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=0 waits=1 writes=1 bytes=2 earlyH=32 differences=3 acquire=1 priority=1 rowwrites=5 tail=0 entry=0 dry=194 deadline=1 inta=0 IFrise=0 IFfall=0 readedge=3 withdraw=0"
+        ]
+      },
+      {
+        "id": 2,
+        "family": 0,
+        "waits": 3,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=1 rise=0 fall=0 masked=0 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=0 waits=3 writes=1 bytes=2 earlyH=44 differences=3 acquire=1 priority=1 rowwrites=5 tail=0 entry=0 dry=290 deadline=1 inta=0 IFrise=0 IFfall=0 readedge=3 withdraw=0"
+        ]
+      },
+      {
+        "id": 3,
+        "family": 1,
+        "waits": 0,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=2 fall=0 masked=0 entries=1 returns=1 riseR=35"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=1 waits=0 writes=5 bytes=9 earlyH=20 differences=3 acquire=1 priority=1 rowwrites=25 tail=5 entry=50 dry=166 deadline=1 inta=2 IFrise=2 IFfall=1 readedge=45 withdraw=0"
+        ]
+      },
+      {
+        "id": 4,
+        "family": 1,
+        "waits": 1,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=2 fall=0 masked=0 entries=1 returns=1 riseR=40"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=1 waits=1 writes=5 bytes=9 earlyH=24 differences=3 acquire=1 priority=1 rowwrites=25 tail=5 entry=50 dry=306 deadline=1 inta=2 IFrise=2 IFfall=1 readedge=27 withdraw=0"
+        ]
+      },
+      {
+        "id": 5,
+        "family": 1,
+        "waits": 3,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=2 fall=0 masked=0 entries=1 returns=1 riseR=50"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=1 waits=3 writes=5 bytes=9 earlyH=32 differences=3 acquire=1 priority=1 rowwrites=25 tail=5 entry=70 dry=450 deadline=1 inta=2 IFrise=2 IFfall=1 readedge=27 withdraw=0"
+        ]
+      },
+      {
+        "id": 6,
+        "family": 1,
+        "waits": 0,
+        "withdraw": 1,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=2 fall=0 masked=0 entries=1 returns=1 riseR=35"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=1 waits=0 writes=5 bytes=9 earlyH=20 differences=3 acquire=1 priority=1 rowwrites=25 tail=5 entry=50 dry=166 deadline=1 inta=2 IFrise=2 IFfall=1 readedge=44 withdraw=1"
+        ]
+      },
+      {
+        "id": 7,
+        "family": 1,
+        "waits": 1,
+        "withdraw": 1,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=2 fall=0 masked=0 entries=1 returns=1 riseR=40"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=1 waits=1 writes=5 bytes=9 earlyH=24 differences=3 acquire=1 priority=1 rowwrites=25 tail=5 entry=50 dry=306 deadline=1 inta=2 IFrise=2 IFfall=1 readedge=26 withdraw=1"
+        ]
+      },
+      {
+        "id": 8,
+        "family": 1,
+        "waits": 3,
+        "withdraw": 1,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=2 fall=0 masked=0 entries=1 returns=1 riseR=50"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=1 waits=3 writes=5 bytes=9 earlyH=32 differences=3 acquire=1 priority=1 rowwrites=25 tail=5 entry=70 dry=450 deadline=1 inta=2 IFrise=2 IFfall=1 readedge=26 withdraw=1"
+        ]
+      },
+      {
+        "id": 9,
+        "family": 2,
+        "waits": 0,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=0 fall=1 masked=10 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=2 waits=0 writes=1 bytes=2 earlyH=24 differences=3 acquire=1 priority=1 rowwrites=5 tail=5 entry=0 dry=102 deadline=1 inta=0 IFrise=1 IFfall=1 readedge=5 withdraw=0"
+        ],
+        "drop_R_CEpre": [
+          "136",
+          "140"
+        ],
+        "drain": [
+          "FALL_FIRST_HALT_DRAIN_ANCHOR R=136 CEpost=159 IRQ=0 fullintp=0000"
+        ]
+      },
+      {
+        "id": 10,
+        "family": 2,
+        "waits": 1,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=0 fall=1 masked=15 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=2 waits=1 writes=1 bytes=2 earlyH=24 differences=3 acquire=1 priority=1 rowwrites=5 tail=5 entry=0 dry=206 deadline=1 inta=0 IFrise=1 IFfall=1 readedge=3 withdraw=0"
+        ],
+        "drop_R_CEpre": [
+          "170",
+          "174"
+        ],
+        "drain": [
+          "FALL_FIRST_HALT_DRAIN_ANCHOR R=170 CEpost=206 IRQ=0 fullintp=0000"
+        ]
+      },
+      {
+        "id": 11,
+        "family": 2,
+        "waits": 3,
+        "withdraw": 0,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=0 fall=1 masked=15 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=2 waits=3 writes=1 bytes=2 earlyH=32 differences=3 acquire=1 priority=1 rowwrites=5 tail=5 entry=0 dry=310 deadline=1 inta=0 IFrise=1 IFfall=1 readedge=3 withdraw=0"
+        ],
+        "drop_R_CEpre": [
+          "210",
+          "214"
+        ],
+        "drain": [
+          "FALL_FIRST_HALT_DRAIN_ANCHOR R=210 CEpost=256 IRQ=0 fullintp=0000"
+        ]
+      },
+      {
+        "id": 12,
+        "family": 2,
+        "waits": 0,
+        "withdraw": 1,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=0 fall=1 masked=10 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=2 waits=0 writes=1 bytes=2 earlyH=24 differences=3 acquire=1 priority=1 rowwrites=5 tail=5 entry=0 dry=102 deadline=1 inta=0 IFrise=1 IFfall=1 readedge=4 withdraw=1"
+        ],
+        "drop_R_CEpre": [
+          "136",
+          "140"
+        ],
+        "drain": [
+          "FALL_FIRST_HALT_DRAIN_ANCHOR R=136 CEpost=159 IRQ=0 fullintp=0000"
+        ]
+      },
+      {
+        "id": 13,
+        "family": 2,
+        "waits": 1,
+        "withdraw": 1,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=0 fall=1 masked=15 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=2 waits=1 writes=1 bytes=2 earlyH=24 differences=3 acquire=1 priority=1 rowwrites=5 tail=5 entry=0 dry=206 deadline=1 inta=0 IFrise=1 IFfall=1 readedge=2 withdraw=1"
+        ],
+        "drop_R_CEpre": [
+          "170",
+          "174"
+        ],
+        "drain": [
+          "FALL_FIRST_HALT_DRAIN_ANCHOR R=170 CEpost=206 IRQ=0 fullintp=0000"
+        ]
+      },
+      {
+        "id": 14,
+        "family": 2,
+        "waits": 3,
+        "withdraw": 1,
+        "counts": [
+          "LVC_COUNTS m3=0 rise=0 fall=1 masked=15 entries=0 returns=0 riseR=0"
+        ],
+        "final": [
+          "FIXTURE_FINAL family=2 waits=3 writes=1 bytes=2 earlyH=32 differences=3 acquire=1 priority=1 rowwrites=5 tail=5 entry=0 dry=310 deadline=1 inta=0 IFrise=1 IFfall=1 readedge=2 withdraw=1"
+        ],
+        "drop_R_CEpre": [
+          "210",
+          "214"
+        ],
+        "drain": [
+          "FALL_FIRST_HALT_DRAIN_ANCHOR R=210 CEpost=256 IRQ=0 fullintp=0000"
+        ]
+      },
+      {
+        "id": 15,
+        "family": 1,
+        "waits": 0,
+        "withdraw": 0,
+        "counts": [],
+        "final": []
+      }
+    ],
+    "scope_breakdown": {
+      "full_integration": 15,
+      "pending_delivery_component": 1
+    },
+    "critical_acceptance_sha256": "3b1ae345ddddfd09dfa436b9968fca1d45c7316d41811c103ca2a979b261cc8c"
+  },
+  "mutants": {
+    "cases": 3,
+    "qualification": "PASS finite original-sensitive fixed controls, ROOT and critical accepted; no universal or silicon inference",
+    "results": {
+      "M3": {
+        "status": "PASS_EXPECTED_SENSITIVE_REJECTION",
+        "receipt_sha256": "6c8be6d5e36e8df18669fc6187abcd7fbeb5dd94805a327269d1785515bea745",
+        "return_code": 1
+      },
+      "pending_delivery": {
+        "status": "PASS_EXPECTED_SENSITIVE_REJECTION",
+        "receipt_sha256": "9ffad6d93b5855b930727dfaa8c17894b418a195ff590eb2a7f8a5117aec9c1d",
+        "return_code": 1
+      },
+      "IRQ_veto": {
+        "status": "PASS_EXPECTED_SENSITIVE_REJECTION",
+        "receipt_sha256": "79860ccdd457cb734151b19774868fa3a40d3b9a5da4fc37c8d9797c278d2edb",
+        "return_code": 1
+      }
+    },
+    "root_acceptance_sha256": "0a35c3bdc6a7a0d6e01020690aadb8d170441b676adc6a8ff848c343345c8a3e",
+    "critical_acceptance_sha256": "c0fb3d12bc57f3b2dbbcd56f18074d6c940fbd8b8efa355fd8151681a9893dd8"
+  },
+  "history": {
+    "prior_publication": "18 positive PASS, seven old negative detections, original M3 FAIL and synthetic 12288/35 component results all retained.",
+    "V7": "10 PASS / 6 FAIL held-IRQ batch remains FAIL. Original HALT raw INT wake (EU2582/STEP833) explains failures; no historical reinterpretation.",
+    "V8": "Disjoint falling packet base0200/SP0A00/operand09FE/BX2468; fixed R+4 drop and full INT drain before first HALT. Sixteen fixed cases, no adaptive opcode search."
+  },
+  "scope": {
+    "native_equivalence": "NOT_ESTABLISHED",
+    "coupled_POPF_IRQ": "Fixed full integration rise/fall, mature veto, IRQ entries/returns and sampler/deadline checks accepted with sensitive pending/veto controls. Finite source-derived engineering evidence only; not native waveform equivalence.",
+    "original_qualification": "Historical original M3 integration FAIL retained. New disjoint fixed PUSHF M3 control detects omission; this closes the declared new finite sensitivity requirement without rewriting the original FAIL.",
+    "physical": "Whole20ns FAIL unchanged:21.25MHz/-27.067ns. Scoped stage capture+1.712ns/SYS sampler+1.892ns setup remain limited measured evidence. No new fit or timing claim.",
+    "correctness_bar": "SILICON MATCH",
+    "publication": "Two bench/program files copied byteexact; prereg wrapper is a declared portable derivative. No private host paths/captures/firmware/ROM assets. Public copy not rebuilt/retested. Existing nine RTL and all earlier artifacts unchanged.",
+    "new_qualification": "15 full integration positives +1 pending-delivery component positive +3 fixed sensitive rejections accepted. No timing, production or native promotion."
+  }
+}

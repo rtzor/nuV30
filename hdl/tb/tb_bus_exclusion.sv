@@ -33,6 +33,8 @@ module tb_bus_exclusion;
         .CORE_BUS_ENABLE(bus_enable)
     );
     for (genvar g = 0; g < 2; g++) begin : cores
+        wire [15:0] unused_ss_rdata;
+        wire unused_ss_err, unused_dbg_first_pop, unused_dbg_pend;
         v30_core cpu (
             .CLK(clk), .CE(enables[g]), .RESET(reset), .READY(ready[g]),
             .INT(pin_int), .NMI(pin_nmi), .POLL_N(1'b1),
@@ -40,10 +42,10 @@ module tb_bus_exclusion;
             .STATUS_O(status_o[g]), .QS(qs[g]), .BS(bs[g]),
             .RD_N(rd[g]), .UBE_N(ube[g]), .BUSLOCK_N(buslock[g]),
             .BUS_EXCLUDE(exclude[g]), .SS_ADDR('0), .SS_WDATA('0),
-            .SS_WE(1'b0), .SS_RDATA(), .SS_ERR(), .SS_BUS_QUIET(quiet[g]),
+            .SS_WE(1'b0), .SS_RDATA(unused_ss_rdata), .SS_ERR(unused_ss_err), .SS_BUS_QUIET(quiet[g]),
             .bkd_load(bkd_load), .bkd_regs(bkd_regs), .bkd_queue('0),
             .bkd_qlen('0), .bkd_fetch_ip('0), .scr_en(1'b0),
-            .scr_qop('0), .dbg_regs(regs[g]), .dbg_first_pop(), .dbg_pend()
+            .scr_qop('0), .dbg_regs(regs[g]), .dbg_first_pop(unused_dbg_first_pop), .dbg_pend(unused_dbg_pend)
         );
         assign actual_phase[g] = cpu.u_biu.r_ts;
         assign actual_page[g] = cpu.u_eu.upc_page;

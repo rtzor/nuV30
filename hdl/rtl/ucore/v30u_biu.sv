@@ -144,6 +144,9 @@
 //============================================================================
 
 module v30u_biu (
+`ifdef V30_STAGED_LOCK_DIV5
+    output staged_lock_inta_t1_o,
+`endif
     input             clk,
     input             ce,
 `ifdef V30_MUXED_AD
@@ -971,6 +974,9 @@ assign ss_bus_quiet = !r_run && !r_cmt_valid && (r_rq_n == 2'd0) && !r_halt_pend
 // unambiguously rather than by NBA ordering on the same edge.
 //----------------------------------------------------------------------------
 wire disp_inta = display && r_cmt_noaddr;
+`ifdef V30_STAGED_LOCK_DIV5
+assign staged_lock_inta_t1_o=r_run&&(r_ts==TS_T1)&&r_cur_noaddr&&(r_cur_bs==BS_INTA);
+`endif
 wire cur_inta  = r_run && (r_ts == TS_T1) && r_cur_noaddr;
 // M10 / F51 -- THE HALT PSEUDO-CYCLE HAS NO DATA PHASE.
 //

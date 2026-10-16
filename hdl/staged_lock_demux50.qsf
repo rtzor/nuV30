@@ -1,0 +1,35 @@
+set_global_assignment -name FAMILY "Cyclone V"
+set_global_assignment -name DEVICE 5CSEBA6U23I7
+set_global_assignment -name TOP_LEVEL_ENTITY staged_lock_demux50
+set_global_assignment -name SEED 1
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name VERILOG_MACRO V30_STAGED_LOCK_DIV5
+set_global_assignment -name VERILOG_MACRO "SYNTHESIS=1"
+set_global_assignment -name SEARCH_PATH rtl/ucore
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ucore/v30u_ss_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ucore/v30_core.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ucore/v30u_biu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ucore/v30u_ucrom.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ucore/v30u_eu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE staged_lock_demux50.sv
+set_global_assignment -name SDC_FILE staged_lock_demux50.sdc
+set_instance_assignment -name VIRTUAL_PIN ON -to RESET_I
+set_instance_assignment -name VIRTUAL_PIN ON -to READY_I
+set_instance_assignment -name VIRTUAL_PIN ON -to IRQ_I
+set_instance_assignment -name VIRTUAL_PIN ON -to NMI_I
+set_instance_assignment -name VIRTUAL_PIN ON -to POLL_N_I
+set_instance_assignment -name VIRTUAL_PIN ON -to DATA_I[*]
+set_instance_assignment -name VIRTUAL_PIN ON -to ADDR_O[*]
+set_instance_assignment -name VIRTUAL_PIN ON -to DATA_O[*]
+set_instance_assignment -name VIRTUAL_PIN ON -to STATUS_O[*]
+set_instance_assignment -name VIRTUAL_PIN ON -to BS[*]
+set_instance_assignment -name VIRTUAL_PIN ON -to QS[*]
+set_instance_assignment -name VIRTUAL_PIN ON -to RD_N
+set_instance_assignment -name VIRTUAL_PIN ON -to UBE_N
+set_instance_assignment -name VIRTUAL_PIN ON -to LOCK_N
+set_instance_assignment -name VIRTUAL_PIN ON -to LOCK_SYS_Q
+set_instance_assignment -name VIRTUAL_PIN ON -to LOCK_CE_Q
+set_instance_assignment -name VIRTUAL_PIN ON -to STATUS_SYS_Q[*]
+set_instance_assignment -name VIRTUAL_PIN ON -to CE_O
+set_instance_assignment -name VIRTUAL_PIN ON -to QUIET_O
+set_instance_assignment -name VIRTUAL_PIN ON -to SS_ERR_O
