@@ -59,8 +59,8 @@ begin
     end else if (e_type == TY_CTL && !e_farjmp) begin
         case (e_ictl)
             4'd3:  mode8080_n = 1'b0;                 // MFS
-            4'd2:  mode8080_n = 1'b1;                 // MFC
-            4'd0:  mode8080_n = 1'b0;                 // ENDEM
+            4'd2: begin mode8080_n = 1'b1; md_write_enabled_n = 1'b1; end                 // MFC
+            4'd0: begin mode8080_n = 1'b0; md_write_enabled_n = 1'b0; end                 // ENDEM
             4'd1:  begin psw_n[FIE] = 1'b0; psw_n[FBRK] = 1'b0; end
             4'd6:  begin psw_n[FCY] = 1'b0; psw_n[FV] = 1'b0; end
             4'd7:  begin psw_n[FCY] = 1'b1; psw_n[FV] = 1'b1; end
@@ -69,7 +69,7 @@ begin
             4'd13: if (!stat_n[FZ]) sign_neg_n = 1'b0;
             default: ;
         endcase
-        psw_n = (psw_n & PSW_WRITABLE) | PSW_FORCED;
+        psw_n = psw_with_mode(psw_n, mode8080_n);
     end
 
     // A successor ONE_BYTE_LOGIC write can ride the predecessor's E-row

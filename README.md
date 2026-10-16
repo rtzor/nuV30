@@ -1,5 +1,12 @@
 # nuV30
 
+The current 8080 extension completes the agreed 244-instruction-form finite
+engineering scope, including functional, native-preservation and scoped mapped
+checks. It has not been validated against NEC silicon or for cycle-by-cycle
+hardware timing. See [Final53 validation](docs/notes/8080_final53_validation.md)
+for the tested populations, save-state format, timing artifact and the exact
+limits of the decoder/eight-row proof.
+
 This is a cycle-accurate FPGA recreation of the **NEC V30 (μPD70116)**, developed and
 verified against real CPU hardware. A custom board connects the V30 to a DE-10 Nano, allowing the FPGA to drive the CPU inputs and read it's output. A test harness executes sequences of operations under various bus conditions and measures the responses. That information is use to infer internal hardware behavior and turn that into HDL code.
 
@@ -24,8 +31,11 @@ This is an experiment with AI driven hardware reverse engineering. Various agent
 `hdl/rtl/v30_bus_ownership.sv` is an opt-in, conservative FPGA integration
 adapter for a synchronous level request/grant handshake. It pauses the whole
 core at `SS_BUS_QUIET` and requires external bus isolation, event retention and
-a genuine atomic-operation exclusion guard. The current core's `BUSLOCK_N`
-output is fixed inactive and **cannot provide that guard**. This utility is not
+a genuine atomic-operation exclusion guard. `BUSLOCK_N` is fixed inactive only
+when `V30_STAGED_LOCK_DIV5` is disabled; use the separate `BUS_EXCLUDE` guard.
+This whole-core freeze adapter does not support staged LOCK's uninterrupted
+five-CE profile. The existing staged profile also rejects multiplexed AD.
+This utility is not
 connected to the production harness and does not implement NEC's physical
 HLDRQ/HLDAK or maximum-mode RQ/AK pulse protocols.
 
@@ -38,13 +48,18 @@ synthesis and hardware.
 
 The ucore can optionally publish `BUS_EXCLUDE` when compiled with
 `V30_BUS_OWNERSHIP`. Connect that FPGA-only, conservative native-state guard
-to the adapter's `EXCLUDE` input. It covers decoded LOCK lifetime and active
-internal entry microcode without changing `BUSLOCK_N`, instruction scheduling
+to the adapter's `EXCLUDE` input. It covers native decoded LOCK lifetime and
+the interrupt-decision/internal-entry sequence even when the interrupted frame
+still has 8080 MD. It does not change `BUSLOCK_N`, instruction scheduling
 or save-state fields. The port is absent in default builds. See the
 [guard preregistration](docs/notes/bus_exclusion_prereg_2026-10-07.md) and
 [guard simulation results](docs/notes/bus_exclusion_results_2026-10-07.md).
 This opt-in interface remains outside the production harness; NEC pin timing,
 synthesis promotion and hardware validation are separate gates.
+The [8080-master adaptation preregistration](docs/notes/rqak_master_adaptation_prereg_2026-10-15.md)
+defines the forced-native IRQ regression and unsupported staged/freeze
+combinations. See the [current adaptation results](docs/notes/rqak_master_adaptation_results_2026-10-16.md)
+for the tested scope and remaining closeout checks.
 
 `hdl/rtl/v30_rqak_frontend.sv` optionally converts synchronous active-low
 pulses into that level handshake, publishing external ownership at ACK end

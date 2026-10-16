@@ -1,0 +1,183 @@
+{
+  "schema": "staged-lock-fork-design-v1",
+  "date": "2026-10-11",
+  "status": "NEEDS_CONTRACT",
+  "semantic_producer_status": "NOT_ESTABLISHED",
+  "implementation_authorized_by_this_document": false,
+  "summary": "An independent architectural experiment separating prepared boundary context from late LOCK permission. This document specifies a conditional design and its proof obligations; it adds no RTL, pin wiring, timing exception or implementation result.",
+  "public_base": {
+    "commit": "ed50fb4e5222fb5567c01ff16d34cd8a08f584e2",
+    "branch": "master",
+    "core_pin": "hdl/rtl/ucore/v30_core.sv:510 assigns BUSLOCK_N = 1'b1.",
+    "meaning": "Native LOCK ownership and release are not implemented by this public baseline. The proposed controller and event producers below are design targets, not descriptions of existing public RTL.",
+    "independence": "No unpublished implementation, captures, firmware, private receipt or previous experimental branch is imported. Previous local architectural studies motivate questions, but do not provide validation evidence in this fork."
+  },
+  "design_principle": "SIMPLICITY: this is 80's era hardware — nothing on the die is wasted. Complex or confusing observed behavior is likely simple systems interacting in ways not yet understood. A large fitted table, a many-cased rule, or a per-opcode special case is a signal of misunderstanding, not a deliverable.",
+  "proposed_profile": {
+    "fabric_clock_hz": 50000000,
+    "nominal_ce_divisor": 5,
+    "nominal_cpu_opportunity_hz": 10000000,
+    "fabric_period_ns": 20,
+    "nominal_cpu_interval_ns": 100,
+    "bus": "demultiplexed",
+    "save_state": "inactive in the first proposed integration scope",
+    "qualification": "This is a new, explicit integration profile. A CE opportunity may still be withheld by the existing transaction or yield protocol. LOCK preparation must not add a CPU wait or suppress an otherwise accepted CE.",
+    "not_portable": "The public core permits adjacent CE/CE_HALF phases in multiplexed mode and imposes no five-slot spacing requirement on demultiplexed CE. This profile does not replace that portable contract or the multiplexed rig.",
+    "half_phase": "Five 20 ns ticks do not provide an exact 50 ns midpoint using only rising fabric edges. No multiplexed half-phase schedule is asserted here.",
+    "clock_policy": "No automatic 100 MHz clock proposal, PLL change or multicycle exception follows from these arithmetic values. Launch, capture, enable and stability must be proved for each actual endpoint."
+  },
+  "proposed_observable_contract": {
+    "target": [
+      "Actual BUSLOCK pin at every declared observable deadline",
+      "Both persistent native ownership holds",
+      "Valid FIRST acquisition with acquisition priority over release",
+      "Actual first and second INTA T1 behavior",
+      "Reset and, in a later scope, owned and unrelated save-state priorities"
+    ],
+    "auxiliary_admission": "Universal equality of an auxiliary admission signal outside its sensitive domain is not the architectural target. Equal pin samples alone are also insufficient if a hidden hold update differs.",
+    "controller_law_to_validate": {
+      "symbols": "A = valid acquisition; H = prefix ownership hold; H1 = INTA-pair hold; G = candidate grant; I = actual INTA low arm.",
+      "prefix_low": "A || (H && !G)",
+      "inta_low": "actual_INTA_T1 ? !H1 : H1; actual_INTA_T1 means an active INTA transaction in T1, never an ordinary memory/I/O T1 or an INTA issue preview.",
+      "pin": "reset || !(prefix_low || inta_low)",
+      "H_normal_update": "On an accepted CE: A sets H; otherwise G clears H; otherwise H is retained.",
+      "H1_normal_update": "Toggle only on the specified actual INTA T1 exit event, not on an issue preview or an address-parity hint.",
+      "reset": "Force pin HIGH immediately and clear normal holds at the actual reset sampling edge.",
+      "future_save_state": "Owned hold restore must have explicitly defined priority over normal reset/CE updates; unrelated save-state inhibits normal events. This policy is not implemented or validated here."
+    },
+    "binary_masking_obligation": "With equal current holds, acquisition and INTA arm, pin sensitivity to G requires !reset && H && !A && !I. Hold-update sensitivity requires !save_state_write && !reset && accepted_CE && H && !A. These Boolean conditions do not prove four-state behavior or silicon timing.",
+    "first_use": "The first observable use can be a SYS edge before the next CPU CE. A context completed just before the next CE is not automatically early enough."
+  },
+  "candidate_structure": {
+    "name": "warm context banks, ownership epoch and late grant",
+    "scope": "A separate proposed LOCK unit; the architectural EU/BIU and all non-LOCK outputs remain unchanged unless a later reviewed design explicitly expands scope.",
+    "context_fields": {
+      "valid": 1,
+      "epoch": 1,
+      "kind_NONE_ROW_DEFER_TAIL_OPC": 3,
+      "flush_control": 1,
+      "q_required_control": 2,
+      "reads_opr_control": 1,
+      "rom_E_control": 1,
+      "rom_F_control": 1,
+      "row_bus_intent": 1,
+      "raw_write_kind_NONE_MEMW_WRITEBACK_INTA": 2,
+      "OPR_destination_intent": 1,
+      "frame_release_intent": 1
+    },
+    "context_width_bits": 16,
+    "control_fields": {
+      "phase": 3,
+      "current_epoch": 1,
+      "context_dirty": 1,
+      "pipeline_valid": 2,
+      "paused": 1
+    },
+    "control_width_bits": 8,
+    "warm_bank_hypothesis": "Prepare six possible source-ROM control contexts for hold, sequential advance, local jump, far redirect, entry and IRQ entry in the preceding CPU window. A late actual selector chooses a prepared bank. Availability, completeness and selection timing are unproved; naming six banks does not cover every late ENTRY or successor path.",
+    "conditional_storage_subtotal_bits": 120,
+    "storage_subtotal_equation": "6 * 16 warm-bank bits + 16 active-context bits + 8 control bits = 120 proposed transient bits.",
+    "cost_limits": "This subtotal excludes projection payload, bypass state, any additional bank/tag requirements and the two proposed ownership holds. Total FF/ALM cost is unknown; no fitter count or speed prediction is claimed.",
+    "single_inflight_epoch": "A one-bit epoch is conditional on a single in-flight context and complete cancellation before reuse. More outstanding work requires a proved tag width and wrap policy.",
+    "forbidden_hidden_dependency": "The late grant must not call the full effective-state decoder, read final st_n/global prospective resources as a convenience, or duplicate STEP/unroll in a new file. A fallback to the original long combinational cone would retain that timing path and does not implement this partition."
+  },
+  "stable_intent_and_late_results": {
+    "stable_only_after_source_proof": "ROM pattern controls and destination intents can be banked only when their descriptor origin and selector are known. A late branch selector is not itself a stable field.",
+    "writes_opr": "Store destination intent only. Actual qualification still depends on blocked state, required Q availability, operand kinds and SIGMA/suppression after the original ordered writers.",
+    "write_add": "Store raw write kind only. The actual zero/one/two write debt depends on writeback qualification, suppression and address parity after transfers. Split parity must not be frozen without a stability proof.",
+    "early_E": "A dynamic early-E qualification is not identical to a ROM E bit and must have its own proved producer or late bypass.",
+    "frame_release": "Store the structural COUNT-to-OPR pattern; actual boundary, F, free/eval and retirement qualifications remain live.",
+    "successor_valid": "A local ordered acceptance/consumption record must prove whether the window has closed. Reading final global opcode-valid merely under a different name does not establish separation.",
+    "late_inputs": "Q maturity/consumption, read completion, READY qualification, OPR/debt changes, PSW read-edge override, IRQ/NMI recognition, slot/access availability and split completion remain legal late inputs. They must not be frozen to manufacture pipeline slack.",
+    "context_changing_late_input": "If a late input changes the context kind or ordered resources rather than permission alone, an exact short bypass is required. Marking the context dirty cannot complete several stages instantaneously. Such a bypass is not established yet."
+  },
+  "five_slot_schedule": [
+    {
+      "slot": "P0, 0-20 ns",
+      "work": "Launch ownership/epoch and source-bound preparation after accepted CE0. Any sensitive output before P1 requires a context already prepared in the previous CPU window.",
+      "publication": "Acquisition, reset and actual INTA must retain their own original deadlines."
+    },
+    {
+      "slot": "P1, 20-40 ns",
+      "work": "Predecode proven source-ROM alternatives into warm contexts; preserve actual late branch selection.",
+      "unproved": "The source-to-bank path and complete branch population."
+    },
+    {
+      "slot": "P2, 40-60 ns",
+      "work": "Project only source-local ordered completion, OPR, PSW and debt events with their original priority.",
+      "unproved": "A complete projection that does not reproduce the execution dispatcher."
+    },
+    {
+      "slot": "P3, 60-80 ns",
+      "work": "Resolve the prepared window and publish a combinational late grant from live permissions.",
+      "deadline": "A capture at CE100 that consumes a prior SYS sampler taken at 80 ns requires the pin to be stable before the 80 ns edge. A new register first written at 80 ns does not supply that old-value sample."
+    },
+    {
+      "slot": "P4, 80-100 ns",
+      "work": "Keep late permission live for actual consumers and update ownership holds only at the accepted CE100.",
+      "qualification": "A newly specified consumer sampling directly at CE100 could have a different deadline. That does not preserve earlier pin transitions or silently replace an existing sampler contract."
+    }
+  ],
+  "event_and_epoch_policy": {
+    "launch": "From a proved original handover and its ordered source fields, not simply from E or the final effective state.",
+    "retain": "A dry but eligible boundary remains a recognition window. The instruction epoch spans an entire REP block; HALT retains ownership during standby.",
+    "cancel": "Cancel on the actual successor acceptance or recognition that closes the window, and on invalidating reset/restore/profile changes. A pre-popped successor may close a window in the same evaluation in which it opened.",
+    "startup": "Before the first sensitive pin deadline there must be a valid selected context for the current epoch. There is no unproved warm-up grace period with H already restored or acquired.",
+    "reset": "Immediate pin override is independent of the pipeline; cancel all pending contexts and old tags. Define the first valid post-reset sample explicitly.",
+    "save_state_pending_scope": "The first proposed profile ties save-state inactive. A later profile must restore transient state or prove flush/relaunch before the first observable use, including owned and unrelated writes and reset priority. No current portable save-state claim is made.",
+    "pause_or_yield": "CPU state may pause, but live inputs and combinational pin permission can still change. Do not stop the grant merely because CE is absent.",
+    "mode_or_divisor_change": "Require an explicit cancel/restart and first-valid-sample protocol; do not reuse a prepared context across a changed schedule."
+  },
+  "late_grant_outline": [
+    "Select a valid, matching-epoch context whose birth and cancellation are source-proved.",
+    "ROW requires ordered pending/block/Q/pre-wait/slot/retirement checks; permission is recognition or an allowed ripe FIRST when no flush prevents the pop.",
+    "Deferred and released-tail windows require their own delivery/emission and retirement checks; recognition remains possible with dry Q.",
+    "An opcode window requires actual boundary arming; a prefix loop must not acquire a fabricated instruction boundary.",
+    "Compute grant from that context and live permission. Preserve acquisition priority and actual INTA independently.",
+    "This outline is not an executable producer: the source-bound window and local resource network remain undefined."
+  ],
+  "validity_miss": "An isolated shadow must fail and retain the first miss. Hardware must not silently keep LOCK low, add a CPU wait, use an old epoch or fall back to the long cone. A correct miss policy or proof of no miss is required before candidate pin wiring.",
+  "outputs_other_than_LOCK": "No q_pop, EU post, queue flush, CE acceptance, AD/status or other bus output may be changed merely to make the LOCK pipeline work. Any dependency on those unchanged outputs must be source-accounted. A downstream bridge/IPC redesign is an option for a separate contract, not an existing fact.",
+  "bounded_milestones": [
+    {
+      "phase": "1: source producer and deadlines",
+      "deliverable": "Exact birth/select/cancel events, ordered local late-write producers, removed dependency rails and the first observable deadline. Resolve ENTRY, last-Q, same-evaluation successor closure and previous-window preparation without a copied dispatcher.",
+      "stop": "No prototype if this partition or an explicitly approved new temporal contract is missing."
+    },
+    {
+      "phase": "2: isolated shadow",
+      "deliverable": "A preregistered, reviewed prototype leaving the architectural core and pin oracle unchanged. Check actual pin plus both holds, acquisition and INTA at all sensitive phases; retain misses and failures."
+    },
+    {
+      "phase": "3: functional and native scope",
+      "deliverable": "Declared source-bound functional witnesses and independent native evidence appropriate to the claimed integration. Finite model equivalence is engineering evidence, not silicon validation."
+    },
+    {
+      "phase": "4: physical measurement",
+      "deliverable": "An exact-tree artifact-backed physical result under reviewed constraints. Preserve the existing G6 requirement of Fmax >= 32 MHz, worst setup > 0 and setup/hold TNS = 0; do not relax it because CPU opportunities are 10 MHz. Separately close the proposed 50 MHz profile against its 20 ns applicable launch/capture endpoints and all setup/hold requirements, with any exceptions justified by verified source enables and actual endpoint collections. Passing G6 at 32 MHz alone does not validate this 50 MHz profile; 100 ns CPU spacing is not universal timing slack."
+    }
+  ],
+  "preregisterable_falsifiers": [
+    "First early sensitive handover with H=1, A=0 and no INTA masking, before the new context finishes",
+    "Last operand Q changes binding or ordered resources during preparation",
+    "Dry Q with IRQ/NMI becoming eligible, and flush with recognition but no pop",
+    "Last-tick read response/READY and PSW read-edge override",
+    "Second split-write half and pairing while a slot wait remains",
+    "REP interruption/termination and HALT wake",
+    "Reset/startup with a pending context; later owned/unrelated save-state with restored ownership",
+    "Wrong epoch, omitted capture or selector with an original-sensitive anchor before the expected private rejection",
+    "Adjacent portable CE/half phases against any attempted universal five-slot claim"
+  ],
+  "source_anchors_in_public_base": [
+    "hdl/rtl/ucore/v30_core.sv:510: BUSLOCK_N stub HIGH",
+    "hdl/rtl/ucore/v30_core.sv:198-270: CE/CE_HALF contract and demultiplexed qualification",
+    "hdl/rtl/ucore/v30_core.sv:272: save-state contract",
+    "hdl/rtl/system_large.sv:371-385: fabric-rate input registers",
+    "hdl/rtl/nec_bus.sv:199-206: fabric-rate BUSLOCK sampler"
+  ],
+  "claims": {
+    "documented_by_public_source": "Public BUSLOCK stub, enable contract and sampler/input-register structure only.",
+    "hypothetical": "Context banks, stage schedule, controller law, epochs, bypasses and storage subtotal.",
+    "not_claimed": "RTL implementation, functional pass, native waveform fidelity, timing closure, speed improvement, portable compatibility or complete save-state support."
+  }
+}

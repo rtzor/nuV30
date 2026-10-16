@@ -24,17 +24,18 @@ def main():
     gate_choice.add_argument('--native-guard', action='store_true', help='run opt-in native-state exclusion guard harness')
     gate_choice.add_argument('--rqak', action='store_true', help='run standalone RQAK pulse frontend contract harness')
     gate_choice.add_argument('--rqak-core', action='store_true', help='run actual ucore and RQAK pulse frontend chain')
+    gate_choice.add_argument('--rqak-8080-irq', action='store_true', help='fixed native/8080 forced-native IRQ ownership regression')
     parser.add_argument('--compiler', choices=['gcc', 'clang'], default='gcc')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    top = ('tb_rqak_core' if args.rqak_core else 'tb_rqak_frontend' if args.rqak else 'tb_bus_exclusion' if args.native_guard else
+    top = ('tb_rqak_8080_irq' if args.rqak_8080_irq else 'tb_rqak_core' if args.rqak_core else 'tb_rqak_frontend' if args.rqak else 'tb_bus_exclusion' if args.native_guard else
            'tb_bus_ownership_core' if args.core else 'tb_bus_ownership')
     sources = ['hdl/rtl/v30_bus_ownership.sv', f'hdl/tb/{top}.sv']
-    if args.rqak or args.rqak_core:
+    if args.rqak or args.rqak_core or args.rqak_8080_irq:
         sources += ['hdl/rtl/v30_rqak_frontend.sv']
     extra = []
     declared = list(sources) + ['sw/bus_ownership_gate.py']
-    if args.core or args.native_guard or args.rqak_core:
+    if args.core or args.native_guard or args.rqak_core or args.rqak_8080_irq:
         ucore = root / 'hdl/rtl/ucore'
         sources += ['hdl/rtl/ucore/' + name for name in
                     ['v30u_ss_pkg.sv', 'v30_core.sv', 'v30u_biu.sv', 'v30u_ucrom.sv', 'v30u_eu.sv']]
@@ -44,7 +45,7 @@ def main():
                  ['UNUSEDSIGNAL', 'VARHIDDEN', 'TIMESCALEMOD', 'WIDTHEXPAND',
                   'BLKSEQ', 'DECLFILENAME', 'UNUSEDPARAM', 'MULTIDRIVEN',
                   'UNOPTFLAT', 'CASEINCOMPLETE', 'PROCASSINIT', 'PINCONNECTEMPTY']] + ['-DV30_BACKDOOR']
-        if args.native_guard or args.rqak_core:
+        if args.native_guard or args.rqak_core or args.rqak_8080_irq:
             extra += ['-DV30_BUS_OWNERSHIP']
     work = (root / args.work).resolve()
     work.mkdir(parents=True, exist_ok=True)

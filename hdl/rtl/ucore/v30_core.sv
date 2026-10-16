@@ -77,7 +77,13 @@
 //
 //============================================================================
 
+`ifdef V30_STAGED_LOCK_DIV5
+`include "v30u_staged_lock_unit.svh"
+`endif
 module v30_core (
+`ifdef V30_STAGED_LOCK_DIV5
+    input STAGED_PROFILE_OK,
+`endif
     input             CLK,
     input             CE,        // clock-enable: advance core state this clk
 `ifdef V30_MUXED_AD
@@ -308,6 +314,9 @@ wire        ad_oe_addr, ad_oe_ps, ad_oe_data;
 `endif
 
 v30u_biu u_biu (
+`ifdef V30_STAGED_LOCK_DIV5
+    .staged_lock_inta_t1_o(staged_lock_inta_t1),
+`endif
     .clk        (CLK),
     .ce         (CE),
 `ifdef V30_MUXED_AD
@@ -405,6 +414,12 @@ v30u_biu u_biu (
 
 v30u_eu u_eu (
     .eu_bus_exclude(eu_bus_exclude),
+`ifdef V30_STAGED_LOCK_DIV5
+    .staged_lock_primitive_o(staged_lock_primitive),
+    .staged_lock_ref_boundary_o(staged_lock_ref_boundary),
+    .staged_lock_acquire_o(staged_lock_acquire),
+    .staged_lock_recognition_o(staged_lock_recognition),
+`endif
     .clk        (CLK),
     .ce         (CE),
     .srst       (RESET),
@@ -518,6 +533,26 @@ assign AD_OE = {{4{ad_oe_addr | ad_oe_ps}}, {16{ad_oe_addr | ad_oe_data}}};
 
 // BUSLOCK is not implemented (inherited scope note; the FSM core drives it
 // from the EU's LOCK prefix, which U2 restores).
+
+`ifdef V30_STAGED_LOCK_DIV5
+v30u_staged_lock_pkg::primitive_t staged_lock_primitive;
+wire [3:0] staged_lock_ref_boundary;
+wire staged_lock_acquire,staged_lock_recognition,staged_lock_inta_t1;
+`ifdef V30_MUXED_AD
+wire staged_profile_ok=1'b0; // this opt-in contract requires de-mux
+`else
+wire staged_profile_ok=STAGED_PROFILE_OK;
+`endif
+v30u_staged_lock u_staged_lock (
+ .clk(CLK),.ce(CE),.reset(RESET),.ss_active_i(SS_WE||ss_we_q),
+ .profile_ok_i(staged_profile_ok),.mode8080_i(md8080),.scripted_i(scr_en),
+ .primitive_i(staged_lock_primitive),.ref_boundary_i(staged_lock_ref_boundary),
+ .recognition_i(staged_lock_recognition),.mature_i(q_ripe),.pop_first_i(eu_first),
+ .acquire_i(staged_lock_acquire),.inta_t1_i(staged_lock_inta_t1),.buslock_n_o(BUSLOCK_N)
+);
+`else
 assign BUSLOCK_N = 1'b1;
+`endif
+
 
 endmodule

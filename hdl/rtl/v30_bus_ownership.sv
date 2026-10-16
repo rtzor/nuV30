@@ -4,7 +4,9 @@
 // SS state writes are prohibited during arbitration. CE_HALF is optional at
 // the core; tie it low when the selected core has no half-clock enable.
 // EXCLUDE must come from a genuine external atomic-operation guard: the
-// production core's constant inactive BUSLOCK_N does NOT provide LOCK safety.
+// BUSLOCK_N is constant inactive only with V30_STAGED_LOCK_DIV5 disabled.
+// Use the separate BUS_EXCLUDE guard; this whole-core freeze adapter does not
+// support the staged controller's uninterrupted five-CE profile.
 // Set EXCLUDE only while the CPU owns the bus. It cannot revoke a grant.
 // The system must use CORE_BUS_ENABLE to isolate/mux all CPU bus drivers.
 // This freezes the entire core at a registered quiet boundary, with no bound
