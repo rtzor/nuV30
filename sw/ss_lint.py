@@ -139,11 +139,11 @@ CORES = {
             # is exactly why the version must, because this check compares
             # counts and structurally cannot see a same-length reshape.
             # v14 was 0x8E / 109 / 122 / 232 / 0x8EE8.
-            "SS_VERSION": 0x8F,   # ucore map v15 (0x80 family: never an FSM stream)
+            "SS_VERSION": 0x90,   # ucore map v16: MODE8080 session bit1, same 232 words
             "SS_BIU_COUNT": 109,
             "SS_EU_COUNT": 122,
             "SS_COUNT": 232,
-            "SS_TAG": 0x8FE8,     # (0x8F << 8) | 232
+            "SS_TAG": 0x90E8,     # (0x90 << 8) | 232; no cross-version compatibility
         },
     },
 }

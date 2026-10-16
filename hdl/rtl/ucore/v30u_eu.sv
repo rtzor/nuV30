@@ -153,6 +153,7 @@ module v30u_eu (
     // machine state the pins carry
     output            psw_ie,
     output            md8080,
+    output            eu_bus_exclude, // FPGA ownership guard, not native LOCK
 
     // pins
     input             pin_int,
@@ -506,6 +507,17 @@ localparam bit [5:0]
     S_RESET     = 6'd31,  // F25: the internal reset dispatch, 4 clocks
     S_IRQ_D     = 6'd32,  // the recognised boundary's ONE decision clock
     S_1BL_CHG   = 6'd33;  // ...and the 1BL form's own trailing charge(1)
+
+// FPGA-only conservative exclusion from existing registered execution state.
+// Page 7 denotes internal microcode only while the microsequence is active;
+// its retained value outside states 22..29 is not an active internal sequence.
+// Guarding the entire active internal page is deliberately conservative.
+// Forced native IRQ entry can retain the interrupted 8080 MD flag; protect
+// the decision/internal sequence independently of that saved-frame mode.
+// Only the native LOCK-prefix term is mode-qualified, including locked HALT.
+// This is not NEC BUSLOCK_N timing and adds no execution or save-state state.
+assign eu_bus_exclude = (!mode8080 && lock_pfx) || st == S_IRQ_D ||
+    (upc_page == 3'd7 && st >= S_ROW && st <= S_INSTR_END);
 
 // THE NINE STATES A ZERO-COST HAND-OVER CAN LEAVE THE CHAIN STANDING IN.
 // Every OTHER arm's predecessors set `stop`, so no other state can occupy a

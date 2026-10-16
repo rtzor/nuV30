@@ -118,6 +118,10 @@ module v30_core (
     output     [15:0] SS_RDATA,
     output reg        SS_ERR,
     output            SS_BUS_QUIET
+`ifdef V30_BUS_OWNERSHIP
+    // Opt-in FPGA integration guard. Not a NEC pin or native LOCK waveform.
+    , output          BUS_EXCLUDE
+`endif
 `ifdef V30_BACKDOOR
     ,
     input             bkd_load,     // pulse while RESET=1: inject state
@@ -176,6 +180,12 @@ wire        eu_susp, eu_resume, eu_halt, eu_unhalt, biu_halted;
 wire        eu_unhalt_disp;                       // F43 (SM3 sitting 6)
 wire        eu_bnd_take, eu_bnd_post;   // SM3 sitting 11 (H1's remains)
 wire        psw_ie, md8080;
+/* verilator lint_off UNUSEDSIGNAL */
+wire        eu_bus_exclude;
+/* verilator lint_on UNUSEDSIGNAL */
+`ifdef V30_BUS_OWNERSHIP
+assign BUS_EXCLUDE = eu_bus_exclude;
+`endif
 wire [15:0] ss_eu_rdata, ss_biu_rdata;
 wire        ss_biu_bus_quiet;
 reg   [8:0] ss_addr_q;
@@ -403,6 +413,7 @@ v30u_biu u_biu (
 );
 
 v30u_eu u_eu (
+    .eu_bus_exclude(eu_bus_exclude),
 `ifdef V30_STAGED_LOCK_DIV5
     .staged_lock_primitive_o(staged_lock_primitive),
     .staged_lock_ref_boundary_o(staged_lock_ref_boundary),
