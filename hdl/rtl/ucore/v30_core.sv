@@ -122,6 +122,10 @@ module v30_core (
     // Opt-in FPGA integration guard. Not a NEC pin or native LOCK waveform.
     , output          BUS_EXCLUDE
 `endif
+`ifdef V30_BIU_YIELD
+    // Experimental demux-only internal arbitration; not native pin timing.
+    , input YIELD_PENDING, input BUS_OWNED, output YIELD_READY
+`endif
 `ifdef V30_BACKDOOR
     ,
     input             bkd_load,     // pulse while RESET=1: inject state
@@ -313,6 +317,15 @@ wire [19:0] ad_o;
 wire        ad_oe_addr, ad_oe_ps, ad_oe_data;
 `endif
 
+`ifdef V30_BIU_YIELD
+`ifndef V30_BUS_OWNERSHIP
+V30_BIU_YIELD_REQUIRES_V30_BUS_OWNERSHIP invalid_yield_guard_configuration();
+`endif
+`ifdef V30_MUXED_AD
+V30_BIU_YIELD_REJECTS_V30_MUXED_AD invalid_yield_mux_configuration();
+`endif
+`endif
+
 v30u_biu u_biu (
 `ifdef V30_STAGED_LOCK_DIV5
     .staged_lock_inta_t1_o(staged_lock_inta_t1),
@@ -323,6 +336,10 @@ v30u_biu u_biu (
     .ce_half    (CE_HALF),
 `endif
     .srst       (RESET),
+`ifdef V30_BIU_YIELD
+    .yield_pending(YIELD_PENDING), .bus_owned(BUS_OWNED),
+    .yield_ready(YIELD_READY), .yield_exclude(eu_bus_exclude),
+`endif
     .bs         (BS),
 `ifdef V30_MUXED_AD
     .ad_o       (ad_o),
