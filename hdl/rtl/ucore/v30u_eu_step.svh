@@ -398,14 +398,12 @@ S_EA_CALC: begin
     // microcode tmpa register.  The distinction is normally invisible, but
     // register-form LEA exposes it through the still-armed ADD datapath.
     ea_residue_n = ea;
-    // Only the four two-register address forms select a distinct RHS rail.
-    // Remember both that select and the index value; a later unary EA clears
-    // the select but leaves tmpb itself to evolve exactly as before.
-    ea_pair_valid_n = (rmrm <= 3'd3);
-    if ((rmrm == 3'd0) || (rmrm == 3'd2))
-        ea_pair_rhs_n = gpr_n[R_IX];
-    else if ((rmrm == 3'd1) || (rmrm == 3'd3))
-        ea_pair_rhs_n = gpr_n[R_IY];
+    // Backport upstream 427a3f5a: every EA calculation loads the retained
+    // second addend. Register-form LEA can observe this otherwise hidden rail.
+    ea_pair_valid_n = 1'b1;
+    ea_pair_rhs_n = ((rmmod == 2'd0) && (rmrm <= 3'd3))
+                  ? (rmrm[0] ? gpr_n[R_IY] : gpr_n[R_IX])
+                  : ld_disp_n;
     ea = ea + ld_disp_n;
     rseg = seg_override_n ? {1'b0, seg_ovr_n}
          : ((rmrm == 3'd2) || (rmrm == 3'd3) ||
