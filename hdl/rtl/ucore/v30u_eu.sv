@@ -3292,6 +3292,7 @@ reg chain_report = 0;
 initial if ($test$plusargs("chaindepth")) chain_report = 1;
 reg [3:0] chain_hi;
 initial chain_hi = 4'd0;
+reg chain_open;
 reg [3:0] chain_used;   // <- now a COMB output of the next-state block
 // the eutrace SNAPSHOT: the flop-valued fields the trace line used to
 // read MID-EDGE (after blocks (a)/(b), before the chain).  Everything
@@ -3317,38 +3318,14 @@ reg [5:0] chain_first;
 `ifdef CHAIN_PROBE
 reg cp_seen [0:1023];
 integer cpi;
+integer cp_fd;
 initial for (cpi = 0; cpi < 1024; cpi = cpi + 1) cp_seen[cpi] = 1'b0;
 `endif
 `endif
 
-// The bounded zero-cost chain.  See the loop at the bottom of the clocked
-// block: `CHAIN_MAX` is how many of the model's zero-cost steps may ride one
-// clock, and it costs a FULL UNROLLED COPY of the step case per unit -- which
-// is why 24 of the 33 arms are folded out of positions >= 1 (v30u_eu_step.svh).
-//
-// **7 = the derived maximum occupancy 6, PLUS ONE SPARE POSITION**, because
-// fabric has no assertion.  It was 12 until 2026-08-12.
-//
-// THE BOUND IS 6 AND THREE SOURCES SAY SO, none of which is a gate:
-//   1. sec.51.2's transition-graph argument -- only NINE of the 24 states hand
-//      over without setting `stop` -- plus its (position, state) census over
-//      347 golden forms x 12 waits and the boot march: 24 / 9 / 5 / 3 / 2 / 1.
-//   2. `m72_downstream_timing_2026-08-12.md` sec.3: the same graph re-derived
-//      independently in another repo, same nine states, same depth 6.
-//   3. `hdl/tb/tb_chain_lfsr.sv`: an ALL-LFSR environment executing arbitrary
-//      bytes -- nothing in common with the golden suite -- reporting
-//      CHAIN_DEPTH_MAX 6, entry state 25 (`S_EPOP`), on every seed.
-//
-// **THE GATE IS THE `CHAIN OVERFLOW` $fatal BELOW**, and it is what makes the
-// tightening safe rather than merely agreed-upon.  sec.51.2 declined to tighten
-// precisely because tightening MAKES a claim; the claim is now made, and it is
-// asserted continuously over every population this tree runs.
-//
-// ⚠ THE `[3:0]` WIDTH DOES NOT NARROW WITH THE BOUND.  A `[2:0]` `chain` wraps
-// at the loop's `chain + 4'd1` when it reaches 7, so `8 < 7` never becomes
-// false and the unroll never terminates -- an ELABORATION HANG, not a runtime
-// bug.  It also silently re-keys `CHAIN_PROBE`'s `{chain, st_n}` census.  The
-// width is what makes 8 representable and it stays.
+// Zero-cost chain bound, unchanged from the fork. The flattened pass
+// measures depth explicitly and asserts both termination and depth <= 6.
+// CHAIN_MAX no longer determines the number of replicated case statements.
 localparam bit [3:0] CHAIN_MAX = 4'd7;
 
 integer i;
@@ -3802,33 +3779,44 @@ always @* begin
         chain_used = 4'd0;
         chain_first = st_n;
 `endif
-        for (chain = 0; chain < CHAIN_MAX; chain = chain + 4'd1) begin
-            if (!stop) begin
+        // Adapted from wickerwaka/nuV30 2ceb8c3. The fork's own arm
+        // bodies are retained byte for byte, including 8080 and retained LEA.
+        // The zero-cost graph must remain acyclic in this topological order.
+        chain = 4'd0;
+        `include "v30u_eu_chain_pos.svh"
+        `include "v30u_eu_step.svh"
+        chain = 4'd1;
+        if (!stop && !st_zero_ok(st_n)) stop = 1'b1;
+        if (!stop && (st_n == S_TAIL_POP)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_tail_pop.svh"
+        if (!stop && (st_n == S_TAIL)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_tail.svh"
+        if (!stop && (st_n == S_INSTR_END)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_instr_end.svh"
+        if (!stop && (st_n == S_TAKE_OPC)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_take_opc.svh"
+        if (!stop && (st_n == S_EA_CALC)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_ea_calc.svh"
+        if (!stop && (st_n == S_DECODE)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_decode.svh"
+        if (!stop && (st_n == S_DECODE2)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_decode2.svh"
+        if (!stop && (st_n == S_BIND)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_bind.svh"
+        if (!stop && (st_n == S_ENTER)) begin
+            `include "v30u_eu_chain_pos.svh"
+            `include "v30u_eu_arm_enter.svh"
 `ifndef SYNTHESIS
-                chain_used = chain + 4'd1;
-`ifdef CHAIN_PROBE
-                if (!cp_seen[{chain, st_n}]) begin : cprobe
-                    integer fd;
-                    cp_seen[{chain, st_n}] = 1'b1;
-                    fd = $fopen(`CHAIN_PROBE, "a");
-                    $fwrite(fd, "POS %0d ST %0d\n", chain, st_n);
-                    $fclose(fd);
-                end
+        chain_open = !stop;
 `endif
-`endif
-                // THE FAIL-SAFE.  The 24 position-0-only arms are folded out
-                // of positions >= 1 (see v30u_eu_step.svh's header).  If one
-                // ever DID stand there the folded copy would assign nothing,
-                // `stop` would stay low, and the machine would sit on the same
-                // state forever.  This turns that impossible case into a spent
-                // clock -- the same failure the CHAIN OVERFLOW `$fatal` names,
-                // but survivable in fabric where there is no assertion.
-                if ((chain != 4'd0) && !st_zero_ok(st_n)) stop = 1'b1;
-                else begin
-                    `include "v30u_eu_step.svh"
-                end
-            end
-        end
         // (CHAIN OVERFLOW and the depth tracker are in the clocked observer:
         //  `stop` / `chain_used` / `chain_first` are comb outputs of this block
         //  now, and the check must run ONCE per CE clock on the SETTLED values.)
@@ -4173,9 +4161,10 @@ always @(posedge clk) begin
         // while `stop` is still low would silently push the remainder into the
         // NEXT clock -- a cadence error, not a hang, and therefore invisible
         // without this line.
-        if (!stop)
-            $fatal(1, "v30u_eu: CHAIN OVERFLOW at CHAIN_MAX=%0d (entered in st=%0d, now st=%0d)",
-                   CHAIN_MAX, chain_first, st_n);
+        if (chain_open)
+            $fatal(1, "v30u_eu: CHAIN OVERFLOW flat pass left open (entered=%0d now=%0d)", chain_first, st_n);
+        if (chain_used > CHAIN_MAX - 4'd1)
+            $fatal(1, "v30u_eu: CHAIN OVERFLOW depth=%0d CHAIN_MAX=%0d", chain_used, CHAIN_MAX);
         if (chain_used > chain_hi) begin
             chain_hi = chain_used;
             if (chain_report)
