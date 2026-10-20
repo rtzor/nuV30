@@ -3483,7 +3483,8 @@ localparam integer S1W = $bits({al_adjtmp_n, al_adjust_n, al_bitarm_n, al_bitn_n
         s1_wbyte, s2_val, s2_wbyte, it_val, it_tmpa, it_flags, it_fmask,
         it_writes_tmpa, qripe_pop, md_write_enabled_n});
 reg [S1W-1:0] s1_bus;
-reg [S1W-1:0] s1q = '0;
+reg [S1W-1:0] s1q;
+initial s1q = '0;
 always @(posedge clk)
     if (ss_we || srst || ce_half) s1q <= s1_bus;
 `ifndef SYNTHESIS

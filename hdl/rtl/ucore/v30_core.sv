@@ -256,7 +256,8 @@ assign SS_BUS_QUIET = ss_biu_bus_quiet;
 `ifndef SYNTHESIS
 // has a CE_HALF been seen since the last CE?  Starts asserted so a run's FIRST
 // CE is never reported -- there is no preceding CE for it to be too close to.
-logic ce_half_since_ce = 1'b1;
+logic ce_half_since_ce;
+initial ce_half_since_ce = 1'b1;
 
 always @(posedge CLK) begin
     if (CE && CE_HALF)
