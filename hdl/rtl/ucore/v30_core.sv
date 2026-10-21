@@ -86,10 +86,8 @@ module v30_core (
 `endif
     input             CLK,
     input             CE,        // clock-enable: advance core state this clk
-`ifdef V30_MUXED_AD
     input             CE_HALF,   // clock-enable marking the CPU clock's HALF
                                  // cycle: the T1 AD address->data turnaround
-`endif
     input             RESET,
     input             READY,
     input             INT,
@@ -149,7 +147,7 @@ logic   [1:0] scr_qop = '0;
 // BIU <-> EU
 //----------------------------------------------------------------------------
 wire  [7:0] q_byte;
-wire        q_ripe, q_ripe_lead_n;
+wire        q_ripe, q_ripe_lead_n0, q_ripe_lead_n1;   // WAVE 15 C1
 wire  [3:0] q_cnt;
 wire        eu_ghost_full, eu_ghost_idle, eu_ghost_stack_first;
 // the launch-law's publications (the 8F ghost read's two drivers)
@@ -256,10 +254,10 @@ assign SS_BUS_QUIET = ss_biu_bus_quiet;
 // de-muxed bus does not have.  A de-muxed integrator's only enable contract is
 // `CE`, and the core has no clause to state about a single enable.
 `ifndef SYNTHESIS
-`ifdef V30_MUXED_AD
 // has a CE_HALF been seen since the last CE?  Starts asserted so a run's FIRST
 // CE is never reported -- there is no preceding CE for it to be too close to.
-logic ce_half_since_ce = 1'b1;
+logic ce_half_since_ce;
+initial ce_half_since_ce = 1'b1;
 
 always @(posedge CLK) begin
     if (CE && CE_HALF)
@@ -273,18 +271,19 @@ always @(posedge CLK) begin
     if (CE_HALF)  ce_half_since_ce <= 1'b1;
     else if (CE)  ce_half_since_ce <= 1'b0;
 end
-`endif
 
 // The SAVE-STATE contract is bus-shape independent and is asserted in every
 // configuration.  (It was in the block above until 2026-08-14, when the two
 // ce/ce_half clauses moved under `V30_MUXED_AD` and it could not follow them.)
 always @(posedge CLK) begin
+    if (SS_WE && CE_HALF) $error("SS_WE asserted while CE_HALF high");
     if (SS_WE && CE)    $error("SS_WE asserted while CE high (core not frozen)");
     if (SS_WE && RESET) $error("SS_WE asserted during RESET");
     // Resume-drain contract (A2): the platform must NOT re-enable CE until the
     // SS command staging has drained.  ss_we_q still high at a CE cycle means
     // the core takes its `if (ss_we)` branch and SKIPS its state advance -> a
     // phantom wait on resume.
+    if (CE_HALF && ss_we_q) $error("CE_HALF resumed with SS command staging undrained");
     if (CE && ss_we_q)  $error("CE resumed with SS command staging undrained (ss_we_q high)");
 end
 `endif
@@ -334,7 +333,8 @@ v30u_biu u_biu (
     .md8080     (md8080),
     .q_byte     (q_byte),
     .q_ripe     (q_ripe),
-    .q_ripe_lead_n(q_ripe_lead_n),
+    .q_ripe_lead_n0(q_ripe_lead_n0),
+    .q_ripe_lead_n1(q_ripe_lead_n1),
     .q_cnt_o    (q_cnt),
     .q_pop      (q_pop),
     .q_first    (q_first),
@@ -411,10 +411,12 @@ v30u_eu u_eu (
 `endif
     .clk        (CLK),
     .ce         (CE),
+    .ce_half    (CE_HALF),
     .srst       (RESET),
     .q_byte     (q_byte),
     .q_ripe     (q_ripe),
-    .q_ripe_lead_n(q_ripe_lead_n),
+    .q_ripe_lead_n0(q_ripe_lead_n0),
+    .q_ripe_lead_n1(q_ripe_lead_n1),
     .q_cnt      (q_cnt),
     .q_pop      (eu_pop),
     .q_first    (eu_first),

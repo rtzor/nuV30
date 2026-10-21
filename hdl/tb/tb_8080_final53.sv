@@ -26,7 +26,7 @@ logic withdraw_active;
 wire actual_ready=rig_ready&&!withdraw_active;
 logic [7:0] ram[0:1048575],mirror[0:1048575];
 
-v30_core dut(.CLK(clk),.CE(core_ce),.RESET(core_reset),.READY(actual_ready),
+v30_core dut(.CLK(clk),.CE(core_ce),.CE_HALF(half_ce),.RESET(core_reset),.READY(actual_ready),
  .INT(core_int),.NMI(core_nmi),.POLL_N(core_poll),.DATA_I(core_read_data),
  .ADDR_O(addr),.DATA_O(data_out),.STATUS_O(status),.QS(qs),.BS(bs),.RD_N(rd_n),
  .UBE_N(ube_n),.BUSLOCK_N(lock_n),.SS_ADDR(ss_addr),.SS_WDATA(ss_wdata),.SS_WE(ss_we),

@@ -231,7 +231,10 @@ def prepare(a):
 def public_sources(project):
     files = [project / relative for relative in HDL_INPUTS]
     core = project / 'hdl/rtl/ucore'
-    return files, [core / name for name in CORE_FILES]
+    # Extracted EU arms are compiler inputs too. Bind every include, including
+    # new arm files, rather than silently leaving them outside custody checks.
+    files = list(dict.fromkeys(files + sorted(core.glob('*.svh'))))
+    return files, list(dict.fromkeys([core / name for name in CORE_FILES] + sorted(core.glob('*.svh'))))
 
 
 def tool_path(value):
@@ -298,7 +301,11 @@ def compile_fixture(a, lint):
             compiled = {str((Path(p) if Path(p).is_absolute() else a.project / p).resolve())
                 for p in re.findall(r'^S[^\n]*"([^"\n]+)"\s*$', dat, re.M)}
             expected = {str(p.resolve()) for p in files + tool_sources}
-            assert len(expected) == 20 and compiled == expected, {'missing': sorted(expected - compiled), 'undeclared': sorted(compiled - expected)}
+            # Optional staged-lock includes are not elaborated in macro-OFF
+            # builds; they are hashed above, but must not appear as compiled.
+            expected -= {str((a.project / 'hdl/rtl/ucore' / n).resolve()) for n in
+                         ('v30u_staged_lock_pkg.svh', 'v30u_staged_lock_unit.svh')}
+            assert len(expected) >= 20 and compiled == expected, {'missing': sorted(expected - compiled), 'undeclared': sorted(compiled - expected)}
             write_new(target / 'compiled-sources.json', sorted(compiled))
             cpp_files = {str(p): p.read_text(encoding='utf-8', errors='strict') for p in target.glob('*.cpp')}
             audit = cpp_guard.audit_cpp(cpp_files, a.project / 'hdl/tb/tb_8080_final53.sv', FATAL_FAMILIES)

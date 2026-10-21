@@ -139,11 +139,14 @@ CORES = {
             # is exactly why the version must, because this check compares
             # counts and structurally cannot see a same-length reshape.
             # v14 was 0x8E / 109 / 122 / 232 / 0x8EE8.
-            "SS_VERSION": 0x8F,   # ucore map v15 (0x80 family: never an FSM stream)
+            # Final53 already changed MODE8080 bit1 and bumped its package to
+            # private v16 before db3e978. Keep the gate bound to THAT fork's
+            # exact existing format; the structural changes add no SSA word.
+            "SS_VERSION": 0x90,
             "SS_BIU_COUNT": 109,
             "SS_EU_COUNT": 122,
             "SS_COUNT": 232,
-            "SS_TAG": 0x8FE8,     # (0x8F << 8) | 232
+            "SS_TAG": 0x90E8,     # (0x90 << 8) | 232
         },
     },
 }

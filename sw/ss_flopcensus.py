@@ -199,7 +199,7 @@ MODSCOPE = re.compile(r"^(?:assign|wire|logic|reg|integer|genvar|localparam|"
 BLK_OPEN = re.compile(r"\b(?:begin|case[xz]?|function|task|fork)\b")
 BLK_CLOSE = re.compile(r"\b(?:end|endcase|endfunction|endtask|join(?:_any|_none)?)\b")
 UC_PREFIX = re.compile(
-    r"^(?:begin\b\s*|end\b\s*|else\b\s*|@\s*\([^)]*\)\s*|"
+    r"^(?:always(?:_ff)?\b\s*|begin\b\s*|end\b\s*|else\b\s*|@\s*\([^)]*\)\s*|"
     r"if\s*\([^)]*\)\s*|for\s*\([^)]*\)\s*|while\s*\([^)]*\)\s*|"
     r"case[xz]?\s*\([^)]*\)\s*|[A-Za-z_]\w*\s*:\s*|"
     r"(?:\d+'[hbdoHBDO])?[0-9A-Fa-fxzXZ_]+\s*:\s*|default\s*:\s*)+")
